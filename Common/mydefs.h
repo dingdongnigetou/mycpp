@@ -86,6 +86,16 @@ static void DoAbort(char *s)
 	DoAbort(s);                                                    \
 }   }
 
+#define MYABORTM(condition, errmsg)    {                              \
+	\
+	if (!(condition))                                       \
+{                                                       \
+	char s[KASSERTBUFFSIZE];                            \
+	s[KASSERTBUFFSIZE-1] = 0;                          \
+	MYSNPRINTF(s,KASSERTBUFFSIZE-1, "_Abort: %s:%d expre: %s, %s", __FILE__, __LINE__, #condition, errmsg); \
+	DoAbort(s);                                        \
+}   }
+
 #define MYWARN(condition) {                                       \
 	if (!(condition))                                       \
 	MYPRINTF( "_Warn: %s, %s, %d\n",#condition, __FILE__, __LINE__ );     }                                                           
