@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DBAccess", "DBAccess\DBAccess.vcxproj", "{3B154330-8469-4F7B-8126-2C01824AD637}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{58904325-9FE0-4C9D-905C-2ACC570C238A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{B20D1884-0253-4B57-A03E-A24BBB153BE3}"
+	ProjectSection(SolutionItems) = preProject
+		common\common.h = common\common.h
+		common\mydefs.h = common\mydefs.h
+		common\mytypes.h = common\mytypes.h
+		Common\noncopyable.h = Common\noncopyable.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mutex", "Mutex", "{815613B9-4C45-4617-A9E7-EA6417272956}"
+	ProjectSection(SolutionItems) = preProject
+		Common\Mutex\MyCond.hpp = Common\Mutex\MyCond.hpp
+		Common\Mutex\MyMutex.hpp = Common\Mutex\MyMutex.hpp
+		Common\Mutex\MyMutexRW.hpp = Common\Mutex\MyMutexRW.hpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "String", "String", "{BA11F45C-A975-4248-9504-E0A8CEDC0FB7}"
+	ProjectSection(SolutionItems) = preProject
+		Common\string\string.hpp = Common\string\string.hpp
+		Common\string\StringBuilder.hpp = Common\string\StringBuilder.hpp
+		Common\string\StrUtil.hpp = Common\string\StrUtil.hpp
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug|Win32.Build.0 = Debug|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Release|Win32.ActiveCfg = Release|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Release|Win32.Build.0 = Release|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug|Win32.Build.0 = Debug|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release|Win32.ActiveCfg = Release|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{815613B9-4C45-4617-A9E7-EA6417272956} = {B20D1884-0253-4B57-A03E-A24BBB153BE3}
+		{BA11F45C-A975-4248-9504-E0A8CEDC0FB7} = {B20D1884-0253-4B57-A03E-A24BBB153BE3}
+	EndGlobalSection
+EndGlobal

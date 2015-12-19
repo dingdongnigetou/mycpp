@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="common">
+      <UniqueIdentifier>{6c949a03-fb1f-4fc8-b992-7a58fa040615}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mysql_api">
+      <UniqueIdentifier>{7bb819a4-03c0-4763-93ae-47bb64252ace}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ocilib">
+      <UniqueIdentifier>{b3757644-27e7-4cba-b963-2dff41cc2a48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="odbc">
+      <UniqueIdentifier>{8b40302d-c209-487d-8192-be086047cb9f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="common\ConnectionPool.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql_api\MysqlConnection.cpp">
+      <Filter>mysql_api</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql_api\MysqlRecordSet.cpp">
+      <Filter>mysql_api</Filter>
+    </ClCompile>
+    <ClCompile Include="ocilib\OciConnection.cpp">
+      <Filter>ocilib</Filter>
+    </ClCompile>
+    <ClCompile Include="ocilib\OciRecordSet.cpp">
+      <Filter>ocilib</Filter>
+    </ClCompile>
+    <ClCompile Include="common\DBAccessApi.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="common\ConnectionPool.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\TypeDef.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql_api\MysqlConnection.h">
+      <Filter>mysql_api</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql_api\MysqlRecordSet.h">
+      <Filter>mysql_api</Filter>
+    </ClInclude>
+    <ClInclude Include="ocilib\OciConnection.h">
+      <Filter>ocilib</Filter>
+    </ClInclude>
+    <ClInclude Include="ocilib\OciRecordSet.h">
+      <Filter>ocilib</Filter>
+    </ClInclude>
+    <ClInclude Include="common\DBAccessApi.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
