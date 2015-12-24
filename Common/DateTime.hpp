@@ -189,12 +189,10 @@ namespace mycpp
 		bool operator >= (const DateTime& rhs) { return seconds_ >= rhs.seconds_ ? true : false; }
 		bool operator <= (const DateTime& rhs) { return seconds_ <= rhs.seconds_ ? true : false; }
 		bool operator != (const DateTime& rhs) { return 0 != Compare(rhs); }
-		DateTime DateTime::operator - (const DateTime& rhs)
+		DateTime&& DateTime::operator - (const DateTime& rhs)
 		{
 			auto seconds = seconds_ - rhs.seconds_;
-			DateTime lhs;
-			lhs.AddSeconds(static_cast<int>(seconds));
-			return std::move(lhs);
+			return std::move(DateTime(seconds));
 		}
 
 		// 比较时间大小
