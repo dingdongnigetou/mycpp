@@ -1,5 +1,5 @@
-#ifndef MYCPP_COMMON_COMMON_H
-#define MYCPP_COMMON_COMMON_H 
+#ifndef __MYCPP_COMMON_COMMON_H__
+#define __MYCPP_COMMON_COMMON_H__
 
 #include "mytypes.h"
 #include "mydefs.h"

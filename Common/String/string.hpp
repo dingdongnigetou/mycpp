@@ -1,7 +1,6 @@
-#ifndef __STRING_HPP__
-#define __STRING_HPP__
+#ifndef __MYCPP_STRING_HPP__
+#define __MYCPP_STRING_HPP__
 
-#include <tchar.h>
 #include <string>
 
 #if defined(UNICODE) || defined(_UNICODE)
@@ -11,4 +10,4 @@ typedef std::string	tstring;
 #endif
 
 
-#endif// end __STRING_HPP__
+#endif// end __MYCPP_STRING_HPP__

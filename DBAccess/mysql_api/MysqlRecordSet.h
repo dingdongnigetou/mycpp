@@ -1,15 +1,14 @@
-#ifndef MYSQLRECORDSET_DEF_H
-#define MYSQLRECORDSET_DEF_H
+#ifndef __MYSQLRECORDSET_DEF_H__
+#define __MYSQLRECORDSET_DEF_H__
 
 #include "DBAccessApi.h"
 #include "TypeDef.h"
 #include "mysql.h"
 #include "noncopyable.h"
-using namespace Common;
 
 #include <map> 
 
-class CMysqlRecordSet : noncopyable, public IRecordSet
+class CMysqlRecordSet : mycpp::noncopyable, public IRecordSet
 {
 public:
 	// ¹¹Ôìº¯Êý
@@ -106,4 +105,4 @@ private:
 	std::map<tstring, unsigned int>  m_mapFieldList;    
 };
 
-#endif // MYSQLRECORDSET_DEF_H
+#endif // __MYSQLRECORDSET_DEF_H__

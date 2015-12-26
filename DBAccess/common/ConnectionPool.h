@@ -1,9 +1,8 @@
 
-#ifndef GSCONNECTIONPOOL_DEF_H
-#define GSCONNECTIONPOOL_DEF_H
+#ifndef __GSCONNECTIONPOOL_DEF_H__
+#define __GSCONNECTIONPOOL_DEF_H__
 
 #include "DBAccessApi.h"
-
 #include "TypeDef.h"
 
 class CConnectionPool : public IConnectionPool
@@ -102,4 +101,4 @@ private:
 	Mutex m_csMutexInit;
 };
 
-#endif // CONNECTIONPOOL_DEF_H
+#endif // __CONNECTIONPOOL_DEF_H__

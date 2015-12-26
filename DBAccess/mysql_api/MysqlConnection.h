@@ -1,17 +1,13 @@
 
-#ifndef MYSQLCONNECTION_DEF_H
-#define MYSQLCONNECTION_DEF_H
+#ifndef __MYSQLCONNECTION_DEF_H__
+#define __MYSQLCONNECTION_DEF_H__
 
 #include "DBAccessApi.h"
-
 #include "TypeDef.h"
-
 #include "mysql.h"
-
 #include "noncopyable.h"
-using namespace Common;
 
-class CMysqlConnection : noncopyable, public IConnection
+class CMysqlConnection : mycpp::noncopyable, public IConnection
 {
 public:
 	// ¹¹Ôìº¯Êý
@@ -138,4 +134,4 @@ private:
 	char m_szDateTime[256];
 };
 
-#endif // MYSQLCONNECTION_DEF_H
+#endif // __MYSQLCONNECTION_DEF_H__

@@ -1,7 +1,6 @@
 
-#ifndef MYCPP_COMMON_MYTYPES_H
-#define MYCPP_COMMON_MYTYPES_H 
-
+#ifndef __MYCPP_COMMON_MYTYPES_H__
+#define __MYCPP_COMMON_MYTYPES_H__
 
 #if defined(_MSC_VER) || defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 

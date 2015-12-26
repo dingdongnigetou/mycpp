@@ -1,11 +1,9 @@
 
-#ifndef OCICONNECTION_DEF_H
-#define OCICONNECTION_DEF_H
+#ifndef __OCICONNECTION_DEF_H__
+#define __OCICONNECTION_DEF_H__
 
 #include "DBAccessApi.h"
-
 #include "TypeDef.h"
-
 #include "ocilib.h"
 
 class COciConnection : public IConnection
@@ -153,4 +151,4 @@ private:
 	char m_szDateTime[128];
 };
 
-#endif // OCICONNECTION_DEF_H
+#endif // __OCICONNECTION_DEF_H__

@@ -1,18 +1,13 @@
 
-#ifndef TYPEDEF_DEF_H
-#define TYPEDEF_DEF_H
+#ifndef __TYPEDEF_DEF_H__
+#define __TYPEDEF_DEF_H__
 
 #include "mytypes.h"
 #include "mydefs.h"
+#include "string.hpp"
 
 #include <vector>
 #include <map>
-
-#if defined(UNICODE) || defined(_UNICODE)
-typedef std::wstring							tstring;
-#else
-typedef std::string                             tstring;
-#endif
 
 #define MYDB_PRINT MYPRINTF
 
@@ -23,5 +18,5 @@ typedef std::string                             tstring;
 	return ret; \
 } while (0)
 
-#endif // TYPEDEF_DEF_H
+#endif // __TYPEDEF_DEF_H__
 

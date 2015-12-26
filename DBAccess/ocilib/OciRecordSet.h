@@ -1,13 +1,10 @@
 
-#ifndef OCIRECORDSET_DEF_H
-#define OCIRECORDSET_DEF_H
+#ifndef __OCIRECORDSET_DEF_H__
+#define __OCIRECORDSET_DEF_H__
 
 #include "DBAccessApi.h"
-
 #include "TypeDef.h"
-
 #include "ocilib.h"
-
 
 class COciConnection;
 
@@ -122,4 +119,5 @@ private:
 	std::map<unsigned int, OCI_Lob**> m_mapLobArrayList;
 };
 
-#endif // OCIRECORDSET_DEF_H
+#endif // __OCIRECORDSET_DEF_H__
+
