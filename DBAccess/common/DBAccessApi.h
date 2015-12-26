@@ -1,7 +1,7 @@
 #ifndef __DBACCESSAPI_DEF_H__
 #define __DBACCESSAPI_DEF_H__
 
-#include <string>
+#include <cstdlib>
 
 #ifdef _WIN32
 

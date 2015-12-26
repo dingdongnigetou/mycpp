@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "StrUtil.hpp"
+using namespace mycpp;
 
 CMysqlRecordSet::CMysqlRecordSet( MYSQL* pConn, MYSQL_STMT* pStmt )
 :m_pMysqlConn(pConn)
@@ -186,9 +187,9 @@ bool  CMysqlRecordSet::GetFieldList( void )
 			return false;
 		
 	    // 转化为大写字符串
-	    tstring strUpperName = StrUtil::ToUpper(tstring(pField->name));
+	    std::string strUpperName = StrUtil::ToUpper(std::string(pField->name));
 
-		m_mapFieldList.insert(std::map<tstring, unsigned int>::value_type(strUpperName,i));
+		m_mapFieldList.insert(std::map<std::string, unsigned int>::value_type(strUpperName,i));
 	}
 
 	mysql_field_seek(m_pResult, iCurOffset);   // 回到第一列
@@ -200,9 +201,9 @@ bool  CMysqlRecordSet::GetFieldIndex( const char* szFieldName,unsigned int& iInd
 {
 	MY_ASSERT_RET_VAL(szFieldName,false);
 
-	tstring strNameUpper = StrUtil::ToUpper(tstring(szFieldName)); //转化为大写字符串
+	std::string strNameUpper = StrUtil::ToUpper(std::string(szFieldName)); //转化为大写字符串
 
-	std::map<tstring,  unsigned int>::iterator iter = m_mapFieldList.find(strNameUpper);
+	std::map<std::string,  unsigned int>::iterator iter = m_mapFieldList.find(strNameUpper);
 
 	if( iter == m_mapFieldList.end() )
 		return false;

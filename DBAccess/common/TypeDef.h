@@ -2,12 +2,10 @@
 #ifndef __TYPEDEF_DEF_H__
 #define __TYPEDEF_DEF_H__
 
+#include <string>
+
 #include "mytypes.h"
 #include "mydefs.h"
-#include "string.hpp"
-
-#include <vector>
-#include <map>
 
 #define MYDB_PRINT MYPRINTF
 

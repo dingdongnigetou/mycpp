@@ -10,10 +10,10 @@ class COciConnection : public IConnection
 {
 public:
 	// 构造函数
-	COciConnection( const tstring& strHost,
-		const tstring& strDataBase,
-		const tstring& strUserName,
-		const tstring& strPassword,
+	COciConnection( const std::string& strHost,
+		const std::string& strDataBase,
+		const std::string& strUserName,
+		const std::string& strPassword,
 		UInt16 iPort = 0 );
 
 	// 析构函数
@@ -124,7 +124,7 @@ private:
 	void ErrorPrint( void );
 
 	// 构造绑定sql语句
-	bool MakeBindSql( const char *szSrcSql, tstring& strDstSql );
+	bool MakeBindSql( const char *szSrcSql, std::string& strDstSql );
 
 	// 测试连接状态
 	bool TestConnectAlive( void );
@@ -137,9 +137,9 @@ private:
 	static UInt16 m_iInitRefs;
 
 	// 数据库连接信息
-	tstring  m_strDB;
-	tstring  m_strUser;
-	tstring  m_strPwd;
+	std::string  m_strDB;
+	std::string  m_strUser;
+	std::string  m_strPwd;
 
 	// 数据库连接句柄
 	OCI_Connection *m_pOciConn;

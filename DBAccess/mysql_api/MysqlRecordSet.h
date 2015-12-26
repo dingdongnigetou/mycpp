@@ -102,7 +102,7 @@ private:
 	MYSQL_BIND* m_pBindParam;
     
 	//记录字段名字与字段位置
-	std::map<tstring, unsigned int>  m_mapFieldList;    
+	std::map<std::string, unsigned int>  m_mapFieldList;    
 };
 
 #endif // __MYSQLRECORDSET_DEF_H__

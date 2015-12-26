@@ -11,10 +11,10 @@ class CMysqlConnection : mycpp::noncopyable, public IConnection
 {
 public:
 	// 构造函数
-	CMysqlConnection( const tstring& strHost,
-		const tstring& strDataBase,
-		const tstring& strUserName,
-		const tstring& strPassword,
+	CMysqlConnection( const std::string& strHost,
+		const std::string& strDataBase,
+		const std::string& strUserName,
+		const std::string& strPassword,
 		UInt16 iPort = 0 );
 
 	// 析构函数
@@ -121,10 +121,10 @@ private:
 
 private:
 	// 数据库连接信息
-	tstring  m_strDB;
-    tstring  m_strHost;
-	tstring  m_strUser;
-	tstring  m_strPwd;
+	std::string  m_strDB;
+    std::string  m_strHost;
+	std::string  m_strUser;
+	std::string  m_strPwd;
 	UInt16    m_iPort;
 
 	// 数据库连接句柄

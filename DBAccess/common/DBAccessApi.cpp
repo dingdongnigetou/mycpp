@@ -1,7 +1,6 @@
 #include "DBAccessApi.h"
 #include "ConnectionPool.h"
 
-
 IConnectionPool* CreateDBConnectionPool( EnumDriverType eType )
 {
 	IConnectionPool *pConnPool = NULL;

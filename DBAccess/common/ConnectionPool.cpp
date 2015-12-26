@@ -6,6 +6,8 @@
 #define SET_ERROR_CODE(err) (m_eError = err)
 #define GET_ERROR_CODE(perr) if ( perr ) {*perr = m_eError;}
 
+using namespace mycpp;
+
 CConnectionPool::CConnectionPool( EnumDriverType eType )
 :m_eType(eType)
 ,m_strHost("")
@@ -53,11 +55,11 @@ void CConnectionPool::SetParams( const char* szHost,
 		return ;
 	}
 	
-	if ( szHost ) m_strHost  = tstring(szHost);
-	if ( szPassword ) m_strPassword = tstring(szPassword);
+	if ( szHost ) m_strHost  = std::string(szHost);
+	if ( szPassword ) m_strPassword = std::string(szPassword);
 
-	m_strDataBase = tstring(szDataBase);
-	m_strUserName = tstring(szUserName);
+	m_strDataBase = std::string(szDataBase);
+	m_strUserName = std::string(szUserName);
 
 	m_iPort     = iPort;
 	m_iMinConns = iMinConns;
@@ -189,7 +191,7 @@ void CConnectionPool::DestroyConnection( IConnection* pcsConn )
 
 BOOL CConnectionPool::InitList( void )
 {
-	AutoMutex csAuto(m_csMutexInit);
+	MyAutoMutex csAuto(m_csMutexInit);
 
 	if ( !IsListEmpty() )
 		return TRUE;
@@ -218,7 +220,7 @@ void CConnectionPool::AddList( IConnection* pcsConn )
 	if ( !bRet )
 	{
 		// 加自动锁
-		AutoMutex csAuto(m_csMutex);
+		MyAutoMutex csAuto(m_csMutex);
 		StruConnInfo stInfo;
 		stInfo.bIdle = TRUE;
 		stInfo.pConn = pcsConn;
@@ -229,7 +231,7 @@ void CConnectionPool::AddList( IConnection* pcsConn )
 void CConnectionPool::ClearList( void )
 {
 	// 加自动锁
-	AutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(m_csMutex);
 
 	for ( ConnectionList::iterator iter = m_vecConnectionList.begin();
 		iter != m_vecConnectionList.end();
@@ -257,7 +259,7 @@ void CConnectionPool::ClearList( void )
 BOOL CConnectionPool::IsListItem( IConnection* pcsConn )
 {
 	// 加自动锁
-	AutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(m_csMutex);
 
 	for ( ConnectionList::iterator iter = m_vecConnectionList.begin();
 		iter != m_vecConnectionList.end();
@@ -273,7 +275,7 @@ BOOL CConnectionPool::IsListItem( IConnection* pcsConn )
 IConnection* CConnectionPool::GetIdle( void )
 {
 	// 加自动锁
-	AutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(m_csMutex);
 
 	for ( ConnectionList::iterator iter = m_vecConnectionList.begin();
 		iter != m_vecConnectionList.end();
@@ -292,7 +294,7 @@ IConnection* CConnectionPool::GetIdle( void )
 void CConnectionPool::SetIdle( IConnection* pcsConn )
 {
 	// 加自动锁
-	AutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(m_csMutex);
 
 	for ( ConnectionList::iterator iter = m_vecConnectionList.begin();
 		iter != m_vecConnectionList.end();
@@ -309,7 +311,7 @@ void CConnectionPool::SetIdle( IConnection* pcsConn )
 BOOL CConnectionPool::IsListEmpty( void )
 {
 	// 加自动锁
-	AutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(m_csMutex);
 
 	return m_vecConnectionList.empty()?TRUE:FALSE;
 }

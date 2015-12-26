@@ -6,6 +6,8 @@
 #include "TypeDef.h"
 #include "ocilib.h"
 
+#include <map>
+
 class COciConnection;
 
 class COciRecordSet : public IRecordSet
@@ -87,7 +89,7 @@ private:
 		unsigned int* iFactLen,
 		bool bChar );
 
-	tstring ToBindName(unsigned int iValueIndex);
+	std::string ToBindName(unsigned int iValueIndex);
 
 	EnumDataType GetDataType( unsigned int iColumn, unsigned int iBufSize );
 
