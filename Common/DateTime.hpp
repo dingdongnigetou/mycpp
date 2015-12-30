@@ -70,39 +70,46 @@ namespace mycpp
 			date_.tm_mon += (date_.tm_mon + months) % 12 - 1;
 			seconds_ = mktime(&date_);
 		}
-		void AddWeeks(int weeks) { AddDays(weeks * 7); }
-		void AddDays(int days) { AddHours(days * 24); }
-		void AddHours(int hours) { AddMinutes(hours * 60); }
-		void AddMinutes(int minutes) { AddSeconds(minutes * 60); }
-		void DateTime::AddSeconds(int seconds)
+		DateTime AddWeeks(int weeks) { return AddDays(weeks * 7); }
+		DateTime AddDays(int days) { return AddHours(days * 24); }
+		DateTime AddHours(int hours) { return AddMinutes(hours * 60); }
+		DateTime AddMinutes(int minutes) { return AddSeconds(minutes * 60); }
+		DateTime DateTime::AddSeconds(int seconds)
 		{
 			seconds_ += seconds;
 			localtime_s(&date_, &seconds_);
+
+			return *this;
 		}
 
 		// 除减时间
-		void DateTime::SubYears(int years)
+		DateTime DateTime::SubYears(int years)
 		{
 			date_.tm_year -= years;
 			seconds_ = mktime(&date_);
+			return *this;
 		}
-		void DateTime::SubMonths(int months)
+		DateTime DateTime::SubMonths(int months)
 		{
 			int year = (int)((date_.tm_mon + months) / 12);
 			date_.tm_year -= year;
 			date_.tm_mon -= (date_.tm_mon + months) % 12 - 1;
 			seconds_ = mktime(&date_);
+
+			return *this;
 		}
-		void SubWeeks(int weeks) { SubDays(weeks * 7); }
-		void SubDays(int days) { SubHours(days * 24); }
-		void SubHours(int hours) { SubMinutes(hours * 60); }
-		void SubMinutes(int minutes) { SubSeconds(minutes * 60); }
-		void SubSeconds(int seconds) 
+		DateTime SubWeeks(int weeks) { return SubDays(weeks * 7); }
+		DateTime SubDays(int days) { return SubHours(days * 24); }
+		DateTime SubHours(int hours) { return SubMinutes(hours * 60); }
+		DateTime SubMinutes(int minutes) { return SubSeconds(minutes * 60); }
+		DateTime SubSeconds(int seconds) 
 		{ 
 			seconds_ -= seconds;
 			if (seconds_ < 0)
 				seconds_ = 0;
 			localtime_s(&date_, &seconds_);
+
+			return *this;
 		}
 
 		// 判断上下午
