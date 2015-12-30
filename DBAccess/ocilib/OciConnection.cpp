@@ -1,15 +1,15 @@
 
+#include <sstream>
+
 #include "OciConnection.h"
 #include "OciRecordSet.h"
 
-#include <sstream>
-
 UInt16 COciConnection::m_iInitRefs = 0; 
 
-COciConnection::COciConnection( const tstring& strHost,
-							   const tstring& strDataBase,
-							   const tstring& strUserName,
-							   const tstring& strPassword,
+COciConnection::COciConnection( const std::string& strHost,
+							   const std::string& strDataBase,
+							   const std::string& strUserName,
+							   const std::string& strPassword,
 							   UInt16 iPort )
 :m_strUser(strUserName)
 ,m_strPwd(strPassword)
@@ -133,7 +133,7 @@ IRecordSet* COciConnection::PrepareBind( const char* szSql )
 		return NULL;
 
 	// ππ‘ÏSQL”Ôæ‰
-	tstring strSql("");
+	std::string strSql("");
 	if ( !MakeBindSql(szSql, strSql) )
 		return NULL;
 
@@ -611,7 +611,7 @@ void COciConnection::SetLastError( void )
 	MYASSERT(m_pOciErr!=NULL);
 }
 
-bool COciConnection::MakeBindSql( const char *szSrcSql, tstring& strDstSql )
+bool COciConnection::MakeBindSql( const char *szSrcSql, std::string& strDstSql )
 {
 	std::ostringstream strSql;
 	strSql.str("");

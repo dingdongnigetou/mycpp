@@ -1,13 +1,12 @@
 
-#ifndef OCIRECORDSET_DEF_H
-#define OCIRECORDSET_DEF_H
+#ifndef __OCIRECORDSET_DEF_H__
+#define __OCIRECORDSET_DEF_H__
 
 #include "DBAccessApi.h"
-
 #include "TypeDef.h"
-
 #include "ocilib.h"
 
+#include <map>
 
 class COciConnection;
 
@@ -90,7 +89,7 @@ private:
 		unsigned int* iFactLen,
 		bool bChar );
 
-	tstring ToBindName(unsigned int iValueIndex);
+	std::string ToBindName(unsigned int iValueIndex);
 
 	EnumDataType GetDataType( unsigned int iColumn, unsigned int iBufSize );
 
@@ -122,4 +121,5 @@ private:
 	std::map<unsigned int, OCI_Lob**> m_mapLobArrayList;
 };
 
-#endif // OCIRECORDSET_DEF_H
+#endif // __OCIRECORDSET_DEF_H__
+

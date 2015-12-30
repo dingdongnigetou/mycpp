@@ -1,6 +1,6 @@
 
-#ifndef MYCPP_COMMON_MYDEFS_H
-#define MYCPP_COMMON_MYDEFS_H	
+#ifndef __MYCPP_COMMON_MYDEFS_H__
+#define __MYCPP_COMMON_MYDEFS_H__
 
 #include "mytypes.h"
 #include <stdio.h>
@@ -114,5 +114,5 @@ static void DoAbort(char *s)
 #define MY_ASSERT_RET_VAL(_condition, _val) if(!(_condition)){MYASSERT(0); return _val;}
 #define MY_ASSERT_RET(_condition) if(!(_condition)){ MYASSERT(0); return;}
 
-#endif // MYCPP_COMMON_MYDEFS_H
+#endif // __MYCPP_COMMON_MYDEFS_H__
 

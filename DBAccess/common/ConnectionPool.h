@@ -1,10 +1,12 @@
 
-#ifndef GSCONNECTIONPOOL_DEF_H
-#define GSCONNECTIONPOOL_DEF_H
+#ifndef __GSCONNECTIONPOOL_DEF_H__
+#define __GSCONNECTIONPOOL_DEF_H__
 
 #include "DBAccessApi.h"
-
 #include "TypeDef.h"
+#include "MyMutex.hpp"
+
+#include <vector>
 
 class CConnectionPool : public IConnectionPool
 {
@@ -75,10 +77,10 @@ private:
 private:
 	EnumDriverType m_eType;
 
-	tstring  m_strHost;
-	tstring  m_strDataBase;
-	tstring  m_strUserName;
-	tstring  m_strPassword;
+	std::string  m_strHost;
+	std::string  m_strDataBase;
+	std::string  m_strUserName;
+	std::string  m_strPassword;
 	UInt16  m_iPort;
 	UInt32  m_iMinConns;
 	UInt32  m_iMaxConns;
@@ -97,9 +99,8 @@ private:
 	ConnectionList m_vecConnectionList;
 
 	// Ëø
-	Mutex m_csMutex;
-
-	Mutex m_csMutexInit;
+	mycpp::MyMutex m_csMutex;
+	mycpp::MyMutex m_csMutexInit;
 };
 
-#endif // CONNECTIONPOOL_DEF_H
+#endif // __CONNECTIONPOOL_DEF_H__

@@ -1,8 +1,7 @@
-#ifndef DBACCESSAPI_DEF_H
-#define DBACCESSAPI_DEF_H
+#ifndef __DBACCESSAPI_DEF_H__
+#define __DBACCESSAPI_DEF_H__
 
-#include <string>
-
+#include <cstdlib>
 
 #ifdef _WIN32
 
@@ -265,12 +264,11 @@ public:
 	virtual	void ReleaseConnection( IConnection** pcsConn ) = 0;
 };
 
-
 // 创建数据库连接池
 DB_API IConnectionPool* CreateDBConnectionPool( EnumDriverType eType );
 
 // 销毁数据库连接池
 DB_API void DestroyDBConnectionPool( IConnectionPool** pConnPool );
 
-#endif // DBACCESSAPI_DEF_H
+#endif // __DBACCESSAPI_DEF_H__
 

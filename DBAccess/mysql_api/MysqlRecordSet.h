@@ -1,15 +1,14 @@
-#ifndef MYSQLRECORDSET_DEF_H
-#define MYSQLRECORDSET_DEF_H
+#ifndef __MYSQLRECORDSET_DEF_H__
+#define __MYSQLRECORDSET_DEF_H__
 
 #include "DBAccessApi.h"
 #include "TypeDef.h"
 #include "mysql.h"
 #include "noncopyable.h"
-using namespace Common;
 
 #include <map> 
 
-class CMysqlRecordSet : noncopyable, public IRecordSet
+class CMysqlRecordSet : mycpp::noncopyable, public IRecordSet
 {
 public:
 	// 构造函数
@@ -103,7 +102,7 @@ private:
 	MYSQL_BIND* m_pBindParam;
     
 	//记录字段名字与字段位置
-	std::map<tstring, unsigned int>  m_mapFieldList;    
+	std::map<std::string, unsigned int>  m_mapFieldList;    
 };
 
-#endif // MYSQLRECORDSET_DEF_H
+#endif // __MYSQLRECORDSET_DEF_H__

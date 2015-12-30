@@ -7,10 +7,10 @@
 #include "mysqld_error.h"
 
 
-CMysqlConnection::CMysqlConnection( const tstring& strHost,
-								   const tstring& strDataBase,
-								   const tstring& strUserName,
-								   const tstring& strPassword,
+CMysqlConnection::CMysqlConnection( const std::string& strHost,
+								   const std::string& strDataBase,
+								   const std::string& strUserName,
+								   const std::string& strPassword,
 								   UInt16 iPort  )
 								   
 :m_strHost(strHost)

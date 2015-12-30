@@ -1,5 +1,5 @@
-#ifndef MYCPP_NO_COPY_ABLE_H
-#define MYCPP_NO_COPY_ABLE_H
+#ifndef __MYCPP_NO_COPY_ABLE_H__
+#define __MYCPP_NO_COPY_ABLE_H__
 
 namespace mycpp
 {
@@ -15,5 +15,5 @@ namespace mycpp
 
 }// end namespace mycpp 
 
-#endif  // MYCPP_NO_COPY_ABLE_H
+#endif  // __MYCPP_NO_COPY_ABLE_H__
 

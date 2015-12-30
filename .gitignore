@@ -3,8 +3,7 @@
 ./Test/Release
 
 ./DBAccess/Temp
-./DBAccess/Debug
-./DBAccess/Release
+./DBAccess/bin
 
 *.opensdf
 *.sdf

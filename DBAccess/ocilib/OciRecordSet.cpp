@@ -1,7 +1,7 @@
-#include "OciRecordSet.h"
 
 #include <sstream>
 
+#include "OciRecordSet.h"
 #include "OciConnection.h"
 
 COciRecordSet::COciRecordSet( OCI_Statement *pStmt, COciConnection* pOciConn )
@@ -1046,7 +1046,7 @@ bool COciRecordSet::GetLob( unsigned int iColumn,
 	return true;
 }
 
-tstring COciRecordSet::ToBindName(unsigned int iValueIndex)
+std::string COciRecordSet::ToBindName(unsigned int iValueIndex)
 {
 	std::ostringstream ss;
 	ss.str("");
