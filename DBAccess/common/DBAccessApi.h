@@ -43,6 +43,7 @@ typedef enum EnumDriverType
 	ODBC = 0,
 	OCI,
 	MYSQL_API,
+	ADO,
 	// to add:
 };
 
@@ -262,6 +263,8 @@ public:
 
 	// 释放连接
 	virtual	void ReleaseConnection( IConnection** pcsConn ) = 0;
+
+	virtual EnumDriverType GetDriverType() = 0;
 };
 
 // 创建数据库连接池

@@ -91,7 +91,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.;../Common/String;../Common/Mutex;./common/;./ocilib/;./ocilib/api/win/;../Common/;./mysql_api/;./mysql_api/api/win/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;../Common/String;../Common/Mutex;./common/;./ocilib/;./ocilib/api/win/;../Common/;./mysql_api/;./mysql_api/api/win/;./ado/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DBACCESS_EXPORTS;__LCC__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -105,7 +105,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.;../Common/String;../Common/Mutex;./common/;./ocilib/;./ocilib/api/win/;../Common/;./mysql_api/;./mysql_api/api/win/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;../Common/String;../Common/Mutex;./common/;./ocilib/;./ocilib/api/win/;../Common/;./mysql_api/;./mysql_api/api/win/;./ado/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DBACCESS_STATIC;__LCC__;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -121,7 +121,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.;../Common/String;../Common/Mutex;./common/;./ocilib/;./ocilib/api/win/;../Common/;./mysql_api/;./mysql_api/api/win/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;../Common/String;../Common/Mutex;./common/;./ocilib/;./ocilib/api/win/;../Common/;./mysql_api/;./mysql_api/api/win/;./ado/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDLL;DBACCESS_EXPORTS;__LCC__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -139,18 +139,24 @@
     </Link>
     <ClCompile>
       <PreprocessorDefinitions>DBACCESS_STATIC;__LCC__;</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../Common/String;../Common/Mutex;./common/;./ocilib/;./ocilib/api/win/;../Common/;./mysql_api/;./mysql_api/api/win/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Common/String;../Common/Mutex;./common/;./ocilib/;./ocilib/api/win/;../Common/;./mysql_api/;./mysql_api/api/win/;%(AdditionalIncludeDirectories);./ado/</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ado\AdoConnection.cpp" />
+    <ClCompile Include="ado\AdoRecordSet.cpp" />
     <ClCompile Include="common\ConnectionPool.cpp" />
     <ClCompile Include="common\DBAccessApi.cpp" />
     <ClCompile Include="mysql_api\MysqlConnection.cpp" />
     <ClCompile Include="mysql_api\MysqlRecordSet.cpp" />
     <ClCompile Include="ocilib\OciConnection.cpp" />
     <ClCompile Include="ocilib\OciRecordSet.cpp" />
+    <ClCompile Include="odbc\OdbcConnection.cpp" />
+    <ClCompile Include="odbc\OdbcRecordSet.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ado\AdoConnection.h" />
+    <ClInclude Include="ado\AdoRecordSet.h" />
     <ClInclude Include="common\ConnectionPool.h" />
     <ClInclude Include="common\DBAccessApi.h" />
     <ClInclude Include="common\TypeDef.h" />
@@ -158,6 +164,8 @@
     <ClInclude Include="mysql_api\MysqlRecordSet.h" />
     <ClInclude Include="ocilib\OciConnection.h" />
     <ClInclude Include="ocilib\OciRecordSet.h" />
+    <ClInclude Include="odbc\OdbcConnection.h" />
+    <ClInclude Include="odbc\OdbcRecordSet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

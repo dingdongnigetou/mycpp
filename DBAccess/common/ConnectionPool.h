@@ -40,6 +40,8 @@ public:
 	//  Õ∑≈¡¨Ω”
 	virtual	void ReleaseConnection( IConnection** pcsConn );
 
+	EnumDriverType GetDriverType();
+
 private:
 	// ¥ÌŒÛºÏ≤‚
 	BOOL IsNoError( void );

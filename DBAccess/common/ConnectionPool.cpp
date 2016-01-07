@@ -2,6 +2,7 @@
 
 #include "OciConnection.h"
 #include "MysqlConnection.h"
+#include "AdoConnection.h"
 
 #define SET_ERROR_CODE(err) (m_eError = err)
 #define GET_ERROR_CODE(perr) if ( perr ) {*perr = m_eError;}
@@ -26,6 +27,11 @@ CConnectionPool::CConnectionPool( EnumDriverType eType )
 CConnectionPool::~CConnectionPool( void )
 {
 	ClearList();
+}
+
+EnumDriverType CConnectionPool::GetDriverType()
+{
+	return m_eType;
 }
 
 void CConnectionPool::SetParams( const char* szHost,
@@ -170,9 +176,27 @@ IConnection* CConnectionPool::CreateConnection( void )
 
 			m_iUsedConns ++;
 		}
+	case ADO:
+       {
+			CAdoConnection *p = new CAdoConnection(m_strHost,
+				m_strDataBase,
+				m_strUserName,
+				m_strPassword,
+				m_iPort);
+			if ( !p->ConnectDB() )
+			{
+				SET_ERROR_CODE(p->GetErrorCode());
+				delete p;
+				p = NULL;
+			}
+
+			pcsConn = p;
+
+			m_iUsedConns ++;
+       }
 		break;
 	default:
-		MYASSERTV( (m_eType!=ODBC&&m_eType!=OCI&&m_eType!=MYSQL_API), m_eType );
+		MYASSERTV( (m_eType!=ODBC&&m_eType!=OCI&&m_eType!=MYSQL_API&&m_eType!=ADO), m_eType );
 		SET_ERROR_CODE(RETCODE_PARAMS_ERROR);
 		break;
 	}

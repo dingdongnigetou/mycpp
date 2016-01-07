@@ -13,6 +13,9 @@
     <Filter Include="odbc">
       <UniqueIdentifier>{8b40302d-c209-487d-8192-be086047cb9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ado">
+      <UniqueIdentifier>{bd87c2b6-e9b0-4d2e-aed2-a6bc1b8ddf6c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\ConnectionPool.cpp">
@@ -32,6 +35,18 @@
     </ClCompile>
     <ClCompile Include="common\DBAccessApi.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="odbc\OdbcConnection.cpp">
+      <Filter>odbc</Filter>
+    </ClCompile>
+    <ClCompile Include="odbc\OdbcRecordSet.cpp">
+      <Filter>odbc</Filter>
+    </ClCompile>
+    <ClCompile Include="ado\AdoConnection.cpp">
+      <Filter>ado</Filter>
+    </ClCompile>
+    <ClCompile Include="ado\AdoRecordSet.cpp">
+      <Filter>ado</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +70,18 @@
     </ClInclude>
     <ClInclude Include="common\DBAccessApi.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="odbc\OdbcConnection.h">
+      <Filter>odbc</Filter>
+    </ClInclude>
+    <ClInclude Include="odbc\OdbcRecordSet.h">
+      <Filter>odbc</Filter>
+    </ClInclude>
+    <ClInclude Include="ado\AdoConnection.h">
+      <Filter>ado</Filter>
+    </ClInclude>
+    <ClInclude Include="ado\AdoRecordSet.h">
+      <Filter>ado</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

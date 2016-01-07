@@ -3,6 +3,11 @@
 
 IConnectionPool* CreateDBConnectionPool( EnumDriverType eType )
 {
+	if (eType == ADO)
+	{
+		::CoInitialize(NULL);
+	}
+
 	IConnectionPool *pConnPool = NULL;
 	pConnPool = new CConnectionPool(eType);
 	
@@ -14,7 +19,12 @@ IConnectionPool* CreateDBConnectionPool( EnumDriverType eType )
 void DestroyDBConnectionPool( IConnectionPool** pConnPool )
 {
 	MYASSERT(*pConnPool!=NULL);
-	
+
+	if ((*pConnPool)->GetDriverType() == ADO)
+	{
+		::CoUninitialize();
+	}
+
 	if ( *pConnPool )
 	{
 		delete *pConnPool;
