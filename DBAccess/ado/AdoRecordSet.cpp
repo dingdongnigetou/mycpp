@@ -306,20 +306,12 @@ bool CAdoRecordSet::GetValue( const char* szFieldName,
 	case DT_TIME:
 	case DT_STRING:
 	    {
-	     	char* tmp = (char*)value.bstrVal;
-	     	if (tmp != NULL)
-	     	{
-	     		iValLen = strlen(tmp);
-	     		iValLen = iValLen > iBufSize ? iBufSize : iValLen;
-	     		memcpy(pBuf,
-	     			tmp,
-	     			iValLen);
-	     	}
-	     	else
-	     	{
-	     		iValLen = 0;
-	     	}
+			std::string szValue = std::string((char*)(_bstr_t)value);
 
+			iValLen = szValue.size();
+			iValLen = iValLen > iBufSize ? iBufSize : iValLen;
+
+			memcpy(pBuf,szValue.c_str(),iValLen);
 	     	((char*)pBuf)[iValLen] = '\0';
 	    }
 		break;
