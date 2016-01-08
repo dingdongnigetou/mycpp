@@ -60,8 +60,7 @@ bool CMysqlConnection::ConnectDB( void )
 
 	mysql_autocommit(pConn, 1);        // 设置为自动提交模式
 
-	MYDB_PRINT("Server major    version : %i\n",   mysql_get_server_version(pConn) );
-	MYDB_PRINT("Server proto    version : %i\n",   mysql_get_proto_info(pConn));
+	MYDB_PRINT("MYSQL version : %i\n",   mysql_get_server_version(pConn) );
 
 	return true;
 }

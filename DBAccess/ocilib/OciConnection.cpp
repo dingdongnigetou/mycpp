@@ -92,10 +92,7 @@ bool COciConnection::ConnectDB( void )
 		return false;
 	}
 
-	MYDB_PRINT("Server major    version : %i\n",   OCI_GetServerMajorVersion(pConn));
-	MYDB_PRINT("Server minor    version : %i\n",   OCI_GetServerMinorVersion(pConn));
-	MYDB_PRINT("Server revision version : %i\n\n", OCI_GetServerRevisionVersion(pConn));
-	MYDB_PRINT("Connection      version : %i\n\n", OCI_GetVersionConnection(pConn));
+	MYDB_PRINT("OCI version : %i\n",   OCI_GetServerMajorVersion(pConn));
 
 	// 设置为自动提交模式
 	OCI_SetAutoCommit(pConn, TRUE);

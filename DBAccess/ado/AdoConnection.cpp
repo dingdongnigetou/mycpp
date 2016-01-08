@@ -54,7 +54,7 @@ bool CAdoConnection::ConnectDB( )
 		pConn_->ConnectionTimeout = 30;
 		pConn_->Open(strDB_.c_str(), "", "", adConnectUnspecified);
 
-	    MYDB_PRINT("Server major    version : %s\n",   (char*)(_bstr_t)pConn_->GetVersion());
+	    MYDB_PRINT("ADO version : %s\n",   (char*)(_bstr_t)pConn_->GetVersion());
 
 		return true;
 	}
