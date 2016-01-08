@@ -306,7 +306,7 @@ bool CAdoRecordSet::GetValue( const char* szFieldName,
 	case DT_TIME:
 	case DT_STRING:
 	    {
-	     	char* tmp = (char*)(_bstr_t)value.bstrVal;
+	     	char* tmp = (char*)value.bstrVal;
 	     	if (tmp != NULL)
 	     	{
 	     		iValLen = strlen(tmp);

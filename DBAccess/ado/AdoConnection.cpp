@@ -46,31 +46,28 @@ CAdoConnection::~CAdoConnection(void)
 
 bool CAdoConnection::ConnectDB( )
 {
-	MYASSERT(pConn_ == NULL);
+	DB_POINTER_CHECK_RET(pConn_, false);
 
 	try
 	{
 		pConn_->ConnectionString = strDB_.c_str();
 		pConn_->ConnectionTimeout = 30;
 		pConn_->Open(strDB_.c_str(), "", "", adConnectUnspecified);
+
+	    MYDB_PRINT("Server major    version : %s\n",   (char*)(_bstr_t)pConn_->GetVersion());
+
+		return true;
 	}
 	catch (_com_error& e)
 	{
 		ErrorHandle();
 		return false;
 	}
-
-	MYDB_PRINT("Server major    version : %s\n",   (char*)(_bstr_t)pConn_->GetVersion());
-
-	return true;
 }
 
 bool CAdoConnection::Close()
 {
-	if (pConn_ == NULL)
-	{
-		return false;
-	}
+	DB_POINTER_CHECK_RET(pConn_, false);
 
 	if (!IsOpen())
 	{
@@ -79,10 +76,8 @@ bool CAdoConnection::Close()
 
 	try
 	{
-		if (pConn_ != NULL && IsOpen()) 
-		{
-			pConn_->Close();
-		}
+		pConn_->Close();
+		return true;
 	}
 	catch (_com_error e)
 	{
@@ -90,8 +85,6 @@ bool CAdoConnection::Close()
 		ErrorHandle();
 		return false;
 	}
-
-	return true;
 }
 
 bool CAdoConnection::IsOpen()
@@ -106,8 +99,6 @@ bool CAdoConnection::IsOpen()
 		ErrorHandle();
 		return false;
 	} 
-
-	return	true;
 }
 
 void CAdoConnection::ReleaseRecordSet( IRecordSet** pcsRecordSet )
