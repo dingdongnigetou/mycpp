@@ -18,6 +18,7 @@ CAdoConnection::CAdoConnection( const std::string& strHost,
 	if ( iPort == 0 )
 		iPort = 1433;    // sqlserver默认端口 
 
+
 	char buf[512];
 	sprintf_s(buf,"Provider=SQLOLEDB.1;Password=%s;    \
 		Persist Security Info=True;User ID=%s;Initial Catalog=%s; \
@@ -199,7 +200,7 @@ bool CAdoConnection::BeginTrans()
 	}
 	catch (_com_error e)
 	{
-		//MYDB_PRINT("Warning: BeginTrans 方法发生异常. 错误信息: %s; 文件: %s; 行: %d\n", e.ErrorMessage(), __FILE__, __LINE__);
+		MYDB_PRINT("Warning: BeginTrans 方法发生异常. 错误信息: %s; 文件: %s; 行: %d\n", e.ErrorMessage(), __FILE__, __LINE__);
 		ErrorHandle();
 		return false;
 	}
