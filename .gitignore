@@ -1,10 +1,11 @@
-./Test/Temp
-./Test/Debug
-./Test/Release
+Test/Temp
+Test/Debug
+Test/Release
 
-./DBAccess/Temp
-./DBAccess/bin
+DBAccess/Temp
+DBAccess/bin
 
 *.opensdf
 *.sdf
 *.suo
+*.user
