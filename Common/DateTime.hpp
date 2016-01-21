@@ -281,6 +281,9 @@ namespace mycpp
 			catch (...) {
 				return;
 			}
+
+			month--;
+
 			if (year < 1900) year = 1970;
 			if (month < 0) month = 1;
 			if (day < 0) day = 1;
