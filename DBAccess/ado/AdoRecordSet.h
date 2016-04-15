@@ -73,8 +73,9 @@ public:
 		unsigned int iFactLen = 0,
 		bool bNull = false );
 
-private:
 	bool IsOpen();
+
+private:
 
 	bool Open(const char * szSql);
 

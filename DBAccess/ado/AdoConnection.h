@@ -107,22 +107,24 @@ public:
 
 private:
 	// 关闭连接
-	bool Close();
+	bool close();
 
 	// 连接是否打开
-	bool IsOpen();
+	bool isOpen();
 
 	// 是否重连
-	bool IsReconnect( );
+	bool isReconnect( );
 
 	// 重新连接（由内部保证重连）
-	bool ReconnectDB( );
+	bool reconnectDB( );
 
 	// 错误处理
-	void ErrorHandle( );
+	void errorHandle();
+
+	void clearError();
 
 	// 测试连接状态
-	bool TestConnectAlive( );
+	bool testConnectAlive( );
 
 private:
 	// 数据库连接信息
@@ -136,7 +138,7 @@ private:
 	_ConnectionPtr pConn_;
 
 	// 错误信息
-	ErrorPtr  pErr_;
+	char* pErr_;
 
 	// 时间缓冲区
 	char szDateTime_[256];
