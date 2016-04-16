@@ -1,8 +1,8 @@
 #define __MYCPP_MYCOND_HPP__
 #define __MYCPP_MYCOND_HPP__
 
-#include "mytypes.h"
-#include "noncopyable.h"
+#include "../mytypes.h"
+#include "../noncopyable.h"
 #include "MyMutex.hpp"
 
 namespace mycpp

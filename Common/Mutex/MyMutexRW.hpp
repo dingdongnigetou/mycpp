@@ -1,8 +1,8 @@
 #ifndef __MYCPP_MYMUTEXRW_HPP__
 #define __MYCPP_MYMUTEXRW_HPP__
 
-#include "mytypes.h"
-#include "noncopyable.h"
+#include "../mytypes.h"
+#include "../noncopyable.h"
 
 namespace mycpp
 {

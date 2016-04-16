@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DBAccess", "DBAccess\DBAccess.vcxproj", "{3B154330-8469-4F7B-8126-2C01824AD637}"
 EndProject
@@ -10,7 +10,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{B20D1884-0253-4B57-A03E-A24BBB153BE3}"
 	ProjectSection(SolutionItems) = preProject
 		common\common.h = common\common.h
-		Common\DateTime.hpp = Common\DateTime.hpp
 		common\mydefs.h = common\mydefs.h
 		common\mytypes.h = common\mytypes.h
 		Common\noncopyable.h = Common\noncopyable.h
@@ -26,33 +25,81 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "String", "String", "{BA11F45C-A975-4248-9504-E0A8CEDC0FB7}"
 	ProjectSection(SolutionItems) = preProject
 		Common\string\string.hpp = Common\string\string.hpp
-		Common\string\StringBuilder.hpp = Common\string\StringBuilder.hpp
 		Common\string\StrUtil.hpp = Common\string\StrUtil.hpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Time", "Time", "{326A7DA0-288B-4001-927C-374C26FE9874}"
+	ProjectSection(SolutionItems) = preProject
+		Common\Time\DateTime.hpp = Common\Time\DateTime.hpp
+		Common\Time\TimeMeter.hpp = Common\Time\TimeMeter.hpp
+		Common\Time\Timer.hpp = Common\Time\Timer.hpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "impl", "impl", "{C3BA3409-3D69-429A-B60B-B23B0312916D}"
+	ProjectSection(SolutionItems) = preProject
+		Common\Time\impl\TimeMeter.ipp = Common\Time\impl\TimeMeter.ipp
+		Common\Time\impl\Timer.ipp = Common\Time\impl\Timer.ipp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Thread", "Thread", "{4DEA069D-EA25-45B2-A3D4-5066C1421CD4}"
+	ProjectSection(SolutionItems) = preProject
+		Common\Thread\Thread.hpp = Common\Thread\Thread.hpp
+		Common\Thread\ThreadPool.hpp = Common\Thread\ThreadPool.hpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "impl", "impl", "{C78E08CA-9FCF-4735-B2C2-0A09C3DC1AFB}"
+	ProjectSection(SolutionItems) = preProject
+		Common\Thread\impl\Thread.ipp = Common\Thread\impl\Thread.ipp
+		Common\Thread\impl\ThreadPool.ipp = Common\Thread\impl\ThreadPool.ipp
 	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_Static|Any CPU = Debug_Static|Any CPU
 		Debug_Static|Win32 = Debug_Static|Win32
+		Debug_Static|x64 = Debug_Static|x64
+		Debug|Any CPU = Debug|Any CPU
 		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release_Static|Any CPU = Release_Static|Any CPU
 		Release_Static|Win32 = Release_Static|Win32
+		Release_Static|x64 = Release_Static|x64
+		Release|Any CPU = Release|Any CPU
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug_Static|Any CPU.ActiveCfg = Debug_Static|Win32
 		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug_Static|Win32.ActiveCfg = Debug_Static|Win32
 		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug_Static|Win32.Build.0 = Debug_Static|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug_Static|x64.ActiveCfg = Debug_Static|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug|Win32.ActiveCfg = Debug|Win32
 		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug|Win32.Build.0 = Debug|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Debug|x64.ActiveCfg = Debug|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Release_Static|Any CPU.ActiveCfg = Release_Static|Win32
 		{3B154330-8469-4F7B-8126-2C01824AD637}.Release_Static|Win32.ActiveCfg = Release_Static|Win32
 		{3B154330-8469-4F7B-8126-2C01824AD637}.Release_Static|Win32.Build.0 = Release_Static|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Release_Static|x64.ActiveCfg = Release_Static|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Release|Any CPU.ActiveCfg = Release|Win32
 		{3B154330-8469-4F7B-8126-2C01824AD637}.Release|Win32.ActiveCfg = Release|Win32
 		{3B154330-8469-4F7B-8126-2C01824AD637}.Release|Win32.Build.0 = Release|Win32
+		{3B154330-8469-4F7B-8126-2C01824AD637}.Release|x64.ActiveCfg = Release|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug_Static|Any CPU.ActiveCfg = Debug_Static|Win32
 		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug_Static|Win32.ActiveCfg = Debug_Static|Win32
 		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug_Static|Win32.Build.0 = Debug_Static|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug_Static|x64.ActiveCfg = Debug_Static|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug|Win32.ActiveCfg = Debug|Win32
 		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug|Win32.Build.0 = Debug|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Debug|x64.ActiveCfg = Debug|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release_Static|Any CPU.ActiveCfg = Release_Static|Win32
 		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release_Static|Win32.ActiveCfg = Release_Static|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release_Static|x64.ActiveCfg = Release_Static|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release|Any CPU.ActiveCfg = Release|Win32
 		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release|Win32.ActiveCfg = Release|Win32
 		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release|Win32.Build.0 = Release|Win32
+		{58904325-9FE0-4C9D-905C-2ACC570C238A}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,5 +107,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{815613B9-4C45-4617-A9E7-EA6417272956} = {B20D1884-0253-4B57-A03E-A24BBB153BE3}
 		{BA11F45C-A975-4248-9504-E0A8CEDC0FB7} = {B20D1884-0253-4B57-A03E-A24BBB153BE3}
+		{326A7DA0-288B-4001-927C-374C26FE9874} = {B20D1884-0253-4B57-A03E-A24BBB153BE3}
+		{C3BA3409-3D69-429A-B60B-B23B0312916D} = {326A7DA0-288B-4001-927C-374C26FE9874}
+		{4DEA069D-EA25-45B2-A3D4-5066C1421CD4} = {B20D1884-0253-4B57-A03E-A24BBB153BE3}
+		{C78E08CA-9FCF-4735-B2C2-0A09C3DC1AFB} = {4DEA069D-EA25-45B2-A3D4-5066C1421CD4}
 	EndGlobalSection
 EndGlobal

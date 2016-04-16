@@ -2,8 +2,8 @@
 #ifndef __MYCPPP_MYMUTEX_HPP__
 #define __MYCPPP_MYMUTEX_HPP__
 
-#include "mytypes.h"
-#include "noncopyable.h"
+#include "../mytypes.h"
+#include "../noncopyable.h"
 
 namespace mycpp
 {

@@ -2,15 +2,22 @@
 #define __MYCPP_COMMON_COMMON_H__
 
 #include "mytypes.h"
-#include "mydefs.h"
 
-#define TEST_ASSERT(condition)  MYASSERT(condition)
+namespace mycpp
+{
+	namespace common
+	{
+		// ÐÝÃßº¯Êý£¬µ¥Î»: ºÁÃë
+		static INLINE MySleep(UInt32 milliSeconds)
+		{
+#if defined(_MSWINDOWS_)
+			Sleep(millisSeconds);
+#else
+			usleep(millisSeconds*1000);
+#endif
+		}
+	}
+}
 
-#define TEST_ASSERT_RET(condition,ret) do  \
-{ \
-	MYASSERT(condition); \
-	if ( !condition ) \
-	return ret; \
-} while (0)
 
 #endif // MYCPP_COMMON_COMMON_H 

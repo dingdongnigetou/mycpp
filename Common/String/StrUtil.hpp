@@ -1,7 +1,7 @@
 #ifndef MYCPP_STRUTIL_H
 #define MYCPP_STRUTIL_H
 
-#include "mydefs.h"
+#include "../mydefs.h"
 
 #include <sstream>
 #include <algorithm>
