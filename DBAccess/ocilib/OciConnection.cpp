@@ -4,22 +4,16 @@
 #include "OciConnection.h"
 #include "OciRecordSet.h"
 
-UInt16 COciConnection::m_iInitRefs = 0; 
+UInt16 COciConnection::iInitRefs_ = 0; 
 
 COciConnection::COciConnection( const std::string& strHost,
 							   const std::string& strDataBase,
 							   const std::string& strUserName,
 							   const std::string& strPassword,
 							   UInt16 iPort )
-:m_strUser(strUserName)
-,m_strPwd(strPassword)
-,m_pOciConn(NULL)
-,m_pOciErr(NULL)
+:strUser_(strUserName)
+,strPwd_(strPassword)
 {
-	if ( iPort == 0 )
-		iPort = 1521;    // oracle默认端口
-
-	// 172.7.14.6:1521/ORCL
 	std::ostringstream ssOciDB;
 	ssOciDB.str("");
 	if ( !strHost.empty() )
@@ -29,85 +23,85 @@ COciConnection::COciConnection( const std::string& strHost,
 
 	ssOciDB<<":"<<iPort<<"/"<<strDataBase;
 
-	m_strDB = ssOciDB.str();
+	strDB_ = ssOciDB.str();
 
-	Initialize();
+	initialize();
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 }
 
-COciConnection::~COciConnection( void )
+COciConnection::~COciConnection()
 {
-	DisconnectDB();
-	Cleanup();
+	disconnectDB();
+	cleanup();
 }
 
-bool COciConnection::Initialize( void )
+bool COciConnection::initialize()
 {
-	if ( m_iInitRefs == 0 )
+	if ( iInitRefs_ == 0 )
 	{
-		if ( !OCI_Initialize(NULL,
-			NULL, 
+		if ( !OCI_Initialize(nullptr,
+			nullptr, 
 			OCI_ENV_DEFAULT|OCI_ENV_CONTEXT|OCI_ENV_THREADED) )
 		{
 			MYDB_PRINT("OCI_Initialize() fail! Please check oci dll... \n");
 			return false;
 		}
 
-		OCI_EnableWarnings(TRUE);
+		OCI_EnableWarnings(true);
 	}
 
-	m_iInitRefs ++;
+	iInitRefs_ ++;
 
 	return true;
 }
 
-void COciConnection::Cleanup( void )
+void COciConnection::cleanup()
 {
-	m_iInitRefs --;
+	iInitRefs_ --;
 
-	if ( m_iInitRefs == 0 )
+	if ( iInitRefs_ == 0 )
 	{
 		OCI_Cleanup();
 	}
 }
 
-bool COciConnection::ConnectDB( void )
+bool COciConnection::ConnectDB()
 {
 	// ocilib未初始化则返回失败
-	if ( m_iInitRefs == 0 )
+	if ( iInitRefs_ == 0 )
 		return false;
 
-	MYASSERT(m_pOciConn==NULL);
+	MYASSERT(pOciConn_==nullptr);
 
-	OCI_Connection *pConn = NULL;
-	pConn = OCI_ConnectionCreate( m_strDB.c_str(),
-		m_strUser.c_str(),
-		m_strPwd.c_str(),
+	OCI_Connection *pConn = nullptr;
+	pConn = OCI_ConnectionCreate( strDB_.c_str(),
+		strUser_.c_str(),
+		strPwd_.c_str(),
 		OCI_SESSION_DEFAULT );
 	if ( !pConn )
 	{
 		SetLastError();
-		ErrorPrint();
+		errorPrint();
 		return false;
 	}
 
 	MYDB_PRINT("OCI version : %i\n",   OCI_GetServerMajorVersion(pConn));
 
 	// 设置为自动提交模式
-	OCI_SetAutoCommit(pConn, TRUE);
+	OCI_SetAutoCommit(pConn, true);
 
-	m_pOciConn = pConn;
+	pOciConn_ = pConn;
 
 	return true;
 }
 
-void COciConnection::DisconnectDB( void )
+void COciConnection::disconnectDB()
 {
-	if ( m_pOciConn )
+	if ( pOciConn_ )
 	{
-		OCI_ConnectionFree(m_pOciConn);
-		m_pOciConn = NULL;
+		OCI_ConnectionFree(pOciConn_);
+		pOciConn_ = nullptr;
 	}
 }
 
@@ -118,38 +112,36 @@ void COciConnection::ReleaseRecordSet( IRecordSet** pcsRecordSet )
 	if ( *pcsRecordSet )
 	{
 		delete *pcsRecordSet;
-		*pcsRecordSet = NULL;
+		*pcsRecordSet = nullptr;
 	}
 }
 
 IRecordSet* COciConnection::PrepareBind( const char* szSql )
 {
-	DB_POINTER_CHECK_RET(szSql, NULL);
-	//DB_POINTER_CHECK_RET(m_pOciConn,NULL);
-	if ( !TestConnectAlive() )
-		return NULL;
+	DB_POINTER_CHECK_RET(szSql, nullptr);
+	if ( !testConnectAlive() )
+		return nullptr;
 
 	// 构造SQL语句
 	std::string strSql("");
-	if ( !MakeBindSql(szSql, strSql) )
-		return NULL;
+	if ( !makeBindSql(szSql, strSql) )
+		return nullptr;
 
- 
-	OCI_Statement *pStmt = NULL;
-	pStmt = OCI_StatementCreate(m_pOciConn);
-	MYASSERT(pStmt!=NULL);
+	OCI_Statement *pStmt = nullptr;
+	pStmt = OCI_StatementCreate(pOciConn_);
+	MYASSERT(pStmt!=nullptr);
 
 	if ( !pStmt )
 	{
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	if ( !OCI_Prepare(pStmt, strSql.c_str()) )
 	{
-		ErrorHandle();
-		SafeToFreeStatement(&pStmt);
-		return NULL;
+		errorHandle();
+		safeToFreeStatement(&pStmt);
+		return nullptr;
 	}
 
 	// pStmt 由类COciRecordSet释放
@@ -158,17 +150,16 @@ IRecordSet* COciConnection::PrepareBind( const char* szSql )
 
 bool COciConnection::ExecuteBind( IRecordSet* pcsRecordSet )
 {
-	//DB_POINTER_CHECK_RET(m_pOciConn, false);
 	DB_POINTER_CHECK_RET(pcsRecordSet, false);
 
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
-	COciRecordSet *pOciRecSet =(COciRecordSet*)pcsRecordSet;
+	auto pOciRecSet =(COciRecordSet*)pcsRecordSet;
 
 	if ( !OCI_Execute(pOciRecSet->GetOCIStatement()) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -178,47 +169,45 @@ bool COciConnection::ExecuteBind( IRecordSet* pcsRecordSet )
 bool COciConnection::ExecuteSql( const char* szSql )
 {
 	DB_POINTER_CHECK_RET(szSql, false);
-	//DB_POINTER_CHECK_RET(m_pOciConn, false);
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
-	OCI_Statement *pStmt = NULL;
-	pStmt = OCI_StatementCreate(m_pOciConn);
-	MYASSERT(pStmt!=NULL);
+	OCI_Statement *pStmt = nullptr;
+	pStmt = OCI_StatementCreate(pOciConn_);
+	MYASSERT(pStmt!=nullptr);
 
 	if ( !pStmt )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
 	if ( !OCI_ExecuteStmt(pStmt, szSql) )
 	{
-		ErrorHandle();
-		SafeToFreeStatement(&pStmt);
+		errorHandle();
+		safeToFreeStatement(&pStmt);
 		return false;
 	}
-	SafeToFreeStatement(&pStmt);
+	safeToFreeStatement(&pStmt);
 	return true;
 }
 
 bool COciConnection::GetLastInsertID( const char* szSeqName, signed __int64& lRowID )
 {
 	DB_POINTER_CHECK_RET(szSeqName, false);
-	//DB_POINTER_CHECK_RET(m_pOciConn, false);
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
 	otext szSql[128] = {0};
 	MYSNPRINTF(szSql, sizeof(szSql) - 1, "SELECT %s.CURRVAL AS ID FROM DUAL", szSeqName);
 
-	IRecordSet *pRecSet = ExecuteQuery(szSql);
+	auto pRecSet = ExecuteQuery(szSql);
 	DB_POINTER_CHECK_RET(pRecSet, false);
 
-	if ( !pRecSet->GetValue("ID", &lRowID, sizeof(lRowID), NULL, DT_INT64) )
+	if ( !pRecSet->GetValue("ID", &lRowID, sizeof(lRowID), nullptr, DT_INT64) )
 	{
 		ReleaseRecordSet(&pRecSet);
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -229,26 +218,25 @@ bool COciConnection::GetLastInsertID( const char* szSeqName, signed __int64& lRo
 
 IRecordSet* COciConnection::ExecuteQuery( const char* szSql )
 {
-	DB_POINTER_CHECK_RET(szSql, NULL);
-	//DB_POINTER_CHECK_RET(m_pOciConn, NULL);
-	if ( !TestConnectAlive() )
+	DB_POINTER_CHECK_RET(szSql, nullptr);
+	if ( !testConnectAlive() )
 		return false;
 
-	OCI_Statement *pStmt = NULL;
-	pStmt = OCI_StatementCreate(m_pOciConn);
-	MYASSERT(pStmt!=NULL);
+	OCI_Statement *pStmt = nullptr;
+	pStmt = OCI_StatementCreate(pOciConn_);
+	MYASSERT(pStmt!=nullptr);
 
 	if ( !pStmt )
 	{
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	if ( !OCI_ExecuteStmt(pStmt, szSql) )
 	{
-		ErrorHandle();
-		SafeToFreeStatement(&pStmt);
-		return NULL;
+		errorHandle();
+		safeToFreeStatement(&pStmt);
+		return nullptr;
 	}
 
 	// pStmt 由类COciRecordSet释放
@@ -257,9 +245,8 @@ IRecordSet* COciConnection::ExecuteQuery( const char* szSql )
 
 IRecordSet* COciConnection::ExecutePageQuery( const char* szSql, int iStartRow, int iRowNum )
 {
-	DB_POINTER_CHECK_RET(szSql, NULL);
-	//DB_POINTER_CHECK_RET(m_pOciConn, NULL);
-	if ( !TestConnectAlive() )
+	DB_POINTER_CHECK_RET(szSql, nullptr);
+	if ( !testConnectAlive() )
 		return false;
 
 	// 合成完整SQL语句
@@ -278,77 +265,77 @@ IRecordSet* COciConnection::ExecutePageQuery( const char* szSql, int iStartRow, 
 	return ExecuteQuery(ssFullSql.str().c_str());
 }
 
-bool COciConnection::BeginTrans( void )
+bool COciConnection::BeginTrans()
 {
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
-	DB_POINTER_CHECK_RET(m_pOciConn, false);
+	DB_POINTER_CHECK_RET(pOciConn_, false);
 
 	// 设置手动提交
-	if ( !OCI_SetAutoCommit(m_pOciConn, FALSE) )
+	if ( !OCI_SetAutoCommit(pOciConn_, false) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
 	return true;
 }
 
-void COciConnection::Rollback( void )
+void COciConnection::Rollback()
 {
-	//MYASSERT(m_pOciConn!=NULL);
-	if ( !m_pOciConn )
+	//MYASSERT(pOciConn_!=nullptr);
+	if ( !pOciConn_ )
 		return ;
 
 	// 事务回滚
-	if ( !OCI_Rollback(m_pOciConn) )
+	if ( !OCI_Rollback(pOciConn_) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return ;
 	}
 
 	// 设置为自动提交
-	if ( !OCI_SetAutoCommit(m_pOciConn, TRUE) )
+	if ( !OCI_SetAutoCommit(pOciConn_, true) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return ;
 	}
 }
 
-bool COciConnection::Commit( void )
+bool COciConnection::Commit()
 {
-	//DB_POINTER_CHECK_RET(m_pOciConn, false);
-	if ( !m_pOciConn )
+	//DB_POINTER_CHECK_RET(pOciConn_, false);
+	if ( !pOciConn_ )
 		return false;
 
 	// 事务提交
-	if ( !OCI_Commit(m_pOciConn) )
+	if ( !OCI_Commit(pOciConn_) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
 	// 设置为自动提交
-	if ( !OCI_SetAutoCommit(m_pOciConn, TRUE) )
+	if ( !OCI_SetAutoCommit(pOciConn_, true) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
 	return true;
 }
 
-EnumDBApiRet COciConnection::GetErrorCode( void )
+EnumDBApiRet COciConnection::GetErrorCode()
 {
-	if ( m_iInitRefs == 0 )
+	if ( iInitRefs_ == 0 )
 		return RETCODE_INITIALIZE_FAIL;
 
-	//MYASSERT(m_pOciErr!=NULL);
-	if ( !m_pOciErr )
+	//MYASSERT(pOciErr_!=nullptr);
+	if ( !pOciErr_ )
 		return RETCODE_SUCCESS;
 
-	int iErrCode = OCI_ErrorGetOCICode(m_pOciErr);
+	int iErrCode = OCI_ErrorGetOCICode(pOciErr_);
 	switch ( iErrCode )
 	{
 	case 1:    // 违反唯一约束条件 (.)
@@ -375,21 +362,20 @@ EnumDBApiRet COciConnection::GetErrorCode( void )
 	return RETCODE_UNKNOWN_ERROR;
 }
 
-const char* COciConnection::GetErrorMessage( void )
+const char* COciConnection::GetErrorMessage()
 {
-	if ( m_iInitRefs == 0 )
+	if ( iInitRefs_ == 0 )
 		return "ocilib initialize fail!";
 
-	//MYASSERT(m_pOciErr!=NULL);
-	if ( !m_pOciErr )
+	if ( !pOciErr_ )
 		return "no error.";
 
-	return OCI_ErrorGetString(m_pOciErr);
+	return OCI_ErrorGetString(pOciErr_);
 }
 
 const char* COciConnection::ToTime( const char* szDateTime )
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -403,7 +389,7 @@ const char* COciConnection::ToTime( const char* szDateTime )
 
 const char* COciConnection::ToDate( const char* szDateTime )
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -417,7 +403,7 @@ const char* COciConnection::ToDate( const char* szDateTime )
 
 const char* COciConnection::ToDateTime( const char* szDateTime )
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -431,7 +417,7 @@ const char* COciConnection::ToDateTime( const char* szDateTime )
 
 const char* COciConnection::TimeToStr( const char* szDateTime )
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -445,7 +431,7 @@ const char* COciConnection::TimeToStr( const char* szDateTime )
 
 const char* COciConnection::DateToStr( const char* szDateTime )
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -459,7 +445,7 @@ const char* COciConnection::DateToStr( const char* szDateTime )
 
 const char* COciConnection::DateTimeToStr( const char* szDateTime )
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -471,7 +457,7 @@ const char* COciConnection::DateTimeToStr( const char* szDateTime )
 	return m_szDateTime;
 }
 
-const char* COciConnection::GetSysTime( void )
+const char* COciConnection::GetSysTime()
 {
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -479,10 +465,10 @@ const char* COciConnection::GetSysTime( void )
 		sizeof(m_szDateTime)-1,
 		"SELECT TO_CHAR(sysdate, 'HH24:Mi:SS') FROM DUAL");
 
-	IRecordSet *pRescordSet = ExecuteQuery(m_szDateTime);
+	auto pRescordSet = ExecuteQuery(m_szDateTime);
 	if ( !pRescordSet )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -492,8 +478,8 @@ const char* COciConnection::GetSysTime( void )
 	if ( !pRescordSet->GetValue( 1, m_szDateTime, sizeof(m_szDateTime), &iFactLen ) )
 	{
 		ReleaseRecordSet(&pRescordSet);
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	ReleaseRecordSet(&pRescordSet);
@@ -501,7 +487,7 @@ const char* COciConnection::GetSysTime( void )
 	return m_szDateTime;
 }
 
-const char* COciConnection::GetSysDate( void )
+const char* COciConnection::GetSysDate()
 {
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -509,10 +495,10 @@ const char* COciConnection::GetSysDate( void )
 		sizeof(m_szDateTime)-1,
 		"SELECT TO_CHAR(sysdate, 'YYYY-MM-DD') FROM DUAL");
 
-	IRecordSet *pRescordSet = ExecuteQuery(m_szDateTime);
+	auto pRescordSet = ExecuteQuery(m_szDateTime);
 	if ( !pRescordSet )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -522,8 +508,8 @@ const char* COciConnection::GetSysDate( void )
 	if ( !pRescordSet->GetValue( 1, m_szDateTime, sizeof(m_szDateTime), &iFactLen ) )
 	{
 		ReleaseRecordSet(&pRescordSet);
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	ReleaseRecordSet(&pRescordSet);
@@ -531,7 +517,7 @@ const char* COciConnection::GetSysDate( void )
 	return m_szDateTime;
 }
 
-const char* COciConnection::GetSysDateTime( void )
+const char* COciConnection::GetSysDateTime()
 {   
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -539,10 +525,10 @@ const char* COciConnection::GetSysDateTime( void )
 		sizeof(m_szDateTime)-1,
 		"SELECT TO_CHAR(sysdate, 'YYYY-MM-DD HH24:Mi:SS') FROM DUAL");
 
-	IRecordSet *pRescordSet = ExecuteQuery(m_szDateTime);
+	auto pRescordSet = ExecuteQuery(m_szDateTime);
 	if ( !pRescordSet )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -552,8 +538,8 @@ const char* COciConnection::GetSysDateTime( void )
 	if ( !pRescordSet->GetValue( 1, m_szDateTime, sizeof(m_szDateTime), &iFactLen ) )
 	{
 		ReleaseRecordSet(&pRescordSet);
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	ReleaseRecordSet(&pRescordSet);
@@ -561,7 +547,7 @@ const char* COciConnection::GetSysDateTime( void )
 	return m_szDateTime;
 }
 
-bool COciConnection::IsReconnect( void )
+bool COciConnection::isReconnect()
 {
 	// 若为网络连接错误则重连
 	if ( GetErrorCode() == RETCODE_NETWORK_FAIL_CONNECT )
@@ -570,45 +556,45 @@ bool COciConnection::IsReconnect( void )
 	return false;
 }
 
-bool COciConnection::ReconnectDB( void )
+bool COciConnection::reconnectDB()
 {
-	MYDB_PRINT("TRY RECONNECT DB( %s )... \n", m_strDB.c_str());
-	DisconnectDB();
+	MYDB_PRINT("TRY RECONNECT DB( %s )... \n", strDB_.c_str());
+	disconnectDB();
 	return ConnectDB();
 }
 
-void COciConnection::ErrorHandle( void )
+void COciConnection::errorHandle()
 {
 	// 保存错误信息	
 	SetLastError();
 
 	// 错误信息打印
-	ErrorPrint();
+	errorPrint();
 	
 	// 重连
-	if ( IsReconnect() )
-		ReconnectDB();
+	if ( isReconnect() )
+		reconnectDB();
 }
 
-void COciConnection::ErrorPrint( void )
+void COciConnection::errorPrint()
 {
 	MYDB_PRINT( "OCI %s INFO:\n"
 		"CODE : ORA-%05i\n"
 		"MSG  : %s\n"
 		"SQL  : %s\n",
-		(OCI_ErrorGetType(m_pOciErr)==OCI_ERR_WARNING?"WARNING":"ERROR"),
-		OCI_ErrorGetOCICode(m_pOciErr),
-		OCI_ErrorGetString(m_pOciErr),
-		OCI_GetSql(OCI_ErrorGetStatement(m_pOciErr)) );
+		(OCI_ErrorGetType(pOciErr_)==OCI_ERR_WARNING?"WARNING":"ERROR"),
+		OCI_ErrorGetOCICode(pOciErr_),
+		OCI_ErrorGetString(pOciErr_),
+		OCI_GetSql(OCI_ErrorGetStatement(pOciErr_)) );
 }
 
-void COciConnection::SetLastError( void )
+void COciConnection::SetLastError()
 {
-	m_pOciErr = OCI_GetLastError();
-	MYASSERT(m_pOciErr!=NULL);
+	pOciErr_ = OCI_GetLastError();
+	MYASSERT(pOciErr_!=nullptr);
 }
 
-bool COciConnection::MakeBindSql( const char *szSrcSql, std::string& strDstSql )
+bool COciConnection::makeBindSql( const char *szSrcSql, std::string& strDstSql )
 {
 	std::ostringstream strSql;
 	strSql.str("");
@@ -634,19 +620,19 @@ bool COciConnection::MakeBindSql( const char *szSrcSql, std::string& strDstSql )
 	return true;
 }
 
-bool COciConnection::TestConnectAlive( void )
+bool COciConnection::testConnectAlive()
 {
-	if ( !m_pOciConn )
-		if ( !ReconnectDB() )
+	if ( !pOciConn_ )
+		if ( !reconnectDB() )
 			return false;
 
 	return true;
 }
 
-void COciConnection::SafeToFreeStatement( OCI_Statement **pStmt )
+void COciConnection::safeToFreeStatement( OCI_Statement **pStmt )
 {
-	if ( !IsReconnect() && m_pOciConn )   // 连接重连后，不用释放pStmt
+	if ( !isReconnect() && pOciConn_ )   // 连接重连后，不用释放pStmt
 		OCI_StatementFree(*pStmt);
 
-	*pStmt = NULL;
+	*pStmt = nullptr;
 } 

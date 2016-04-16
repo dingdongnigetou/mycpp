@@ -15,10 +15,10 @@ public:
 	CConnectionPool( EnumDriverType eType );
 
 	// 析构函数
-	virtual ~CConnectionPool( void );
+	virtual ~CConnectionPool();
 
 	// 设置参数
-	// szHost:     数据库主机,本地数据数据库填NULL
+	// szHost:     数据库主机,本地数据数据库填nullptr
 	// szDataBase: 数据库名
 	// szUserName: 连接数据库用户名
 	// szPassword: 连接数据库密码
@@ -35,74 +35,74 @@ public:
 
 	// 获取连接
 	// eError: 获取到连接为空时，可根据错误码来查看原因
-	virtual IConnection* GetConnection( EnumDBApiRet* eError=NULL );
+	virtual IConnection* GetConnection( EnumDBApiRet* eError=nullptr );
 
 	// 释放连接
 	virtual	void ReleaseConnection( IConnection** pcsConn );
-
+	
 	EnumDriverType GetDriverType();
 
 private:
 	// 错误检测
-	BOOL IsNoError( void );
+	bool isNoError();
 
 	// 创建连接
-	IConnection* CreateConnection( void );
+	IConnection* createConnection();
 
 	// 销毁连接
-	void DestroyConnection( IConnection* pcsConn );
+	void destroyConnection( IConnection* pcsConn );
 
 	// 初始化列表
-	BOOL InitList( void );
+	bool initList();
 
 	// 添加连接到连接列表
-	void AddList( IConnection* pcsConn );
+	void addList( IConnection* pcsConn );
 	
 	// 清除连接列表
-	void ClearList( void );
+	void clearList();
 
 	// 是否在列表中
-	BOOL IsListItem( IConnection* pcsConn );
+	bool isListItem( IConnection* pcsConn );
 
 	// 获取空闲连接
-	IConnection* GetIdle( void );
+	IConnection* getIdle();
 	
 	// 设为空闲连接
-	void SetIdle( IConnection* pcsConn );
+	void setIdle( IConnection* pcsConn );
 
 	// 列表是否为空
-	BOOL IsListEmpty( void );
+	bool isListEmpty();
 
 	// 是否达到最大连接数
-	BOOL IsOverMaxLink( void );
+	bool isOverMaxLink();
 
 private:
-	EnumDriverType m_eType;
+	EnumDriverType eType_;
 
-	std::string  m_strHost;
-	std::string  m_strDataBase;
-	std::string  m_strUserName;
-	std::string  m_strPassword;
-	UInt16  m_iPort;
-	UInt32  m_iMinConns;
-	UInt32  m_iMaxConns;
-	UInt32  m_iUsedConns;
+	std::string  strHost_;
+	std::string  strDataBase_;
+	std::string  strUserName_;
+	std::string  strPassword_;
+	UInt16  iPort_;
+	UInt32  iMinConns_;
+	UInt32  iMaxConns_;
+	UInt32  iUsedConns_;
 
-	EnumDBApiRet m_eError;
+	EnumDBApiRet eError_;
 
-	typedef struct StruConnInfo
+	struct StruConnInfo
 	{
-		BOOL bIdle;
+		bool bIdle;
 		IConnection* pConn;
 	};
 
-	// <连接指针, 是否空闲> TRUE空闲, FALSE非空闲
+	// <连接指针, 是否空闲> true空闲, false非空闲
 	typedef std::vector<StruConnInfo>  ConnectionList;
-	ConnectionList m_vecConnectionList;
+	ConnectionList vecConnectionList_;
 
 	// 锁
-	mycpp::MyMutex m_csMutex;
-	mycpp::MyMutex m_csMutexInit;
+	mycpp::MyMutex csMutex_;
+	mycpp::MyMutex csMutexInit_;
 };
 
 #endif // __CONNECTIONPOOL_DEF_H__

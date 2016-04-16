@@ -7,67 +7,58 @@
 using namespace mycpp;
 
 CMysqlRecordSet::CMysqlRecordSet( MYSQL* pConn, MYSQL_STMT* pStmt )
-:m_pMysqlConn(pConn)
-,m_pResult(NULL)
-,m_pStmt(pStmt)
-,m_iMoveRows(0)
-,m_iBindRows(0)
-,m_iBindCols(0)
-,m_pBindParam(NULL)
-,m_bBindSuccess(false)
-,m_bEof(false)
+:pMysqlConn_(pConn)
+,pStmt_(pStmt)
 {
-	m_mapFieldList.clear();
+	mapFieldList_.clear();
 
 	if ( !pStmt )
 	{
-		m_pResult = mysql_store_result(m_pMysqlConn);
+		pResult_ = mysql_store_result(pMysqlConn_);
 
-		if ( m_pResult )
+		if ( pResult_ )
 			MoveNext();
 	}
-
 }
 
-CMysqlRecordSet::~CMysqlRecordSet(void)
+CMysqlRecordSet::~CMysqlRecordSet()
 {
-	 if( m_pResult )
-	     mysql_free_result(m_pResult);
+	 if( pResult_ )
+	     mysql_free_result(pResult_);
 
-     if( m_pStmt )
-         mysql_stmt_close(m_pStmt);
+     if( pStmt_ )
+         mysql_stmt_close(pStmt_);
 
-	 if( m_pBindParam )
-		 delete []m_pBindParam;
+	 if( pBindParam_ )
+		 delete []pBindParam_;
 
-	 m_mapFieldList.clear();
+	 mapFieldList_.clear();
 	
-
-	 m_pResult = NULL;
-	 m_pStmt = NULL; 
-	 m_pBindParam = NULL;
+	 pResult_ = nullptr;
+	 pStmt_ = nullptr; 
+	 pBindParam_ = nullptr;
 }
 
-bool CMysqlRecordSet::Eof( void )
+bool CMysqlRecordSet::Eof()
 {   
-   MY_ASSERT_RET_VAL(m_pResult, false);
-   return m_bEof;
+   MY_ASSERT_RET_VAL(pResult_, false);
+   return bEof_;
 }
 
-bool CMysqlRecordSet::MoveNext( void )
+bool CMysqlRecordSet::MoveNext()
 {
-	MY_ASSERT_RET_VAL(m_pMysqlConn, false);
-	MY_ASSERT_RET_VAL(m_pResult, false);
+	MY_ASSERT_RET_VAL(pMysqlConn_, false);
+	MY_ASSERT_RET_VAL(pResult_, false);
 
-	if ( !mysql_fetch_row(m_pResult) )
+	if ( !mysql_fetch_row(pResult_) )
 	{
-		if ( mysql_errno(m_pMysqlConn) == 0 )
-			m_bEof = true;
+		if ( mysql_errno(pMysqlConn_) == 0 )
+			bEof_ = true;
 
 		return false;
 	}
 
-	m_iMoveRows++;
+	iMoveRows_++;
 
 	return true;
 }
@@ -83,11 +74,11 @@ bool CMysqlRecordSet::MoveNext( void )
 } while(0)
 
 
-EnumDataType CMysqlRecordSet::GetDataType( unsigned int iColumn, unsigned int iBufSize )
+EnumDataType CMysqlRecordSet::getDataType( unsigned int iColumn, unsigned int iBufSize )
 {   
-    MY_ASSERT_RET_VAL(m_pResult, DT_UNKNOWN);
+    MY_ASSERT_RET_VAL(pResult_, DT_UNKNOWN);
 
-	MYSQL_FIELD * pField = mysql_fetch_field_direct(m_pResult, iColumn);
+	auto pField = mysql_fetch_field_direct(pResult_, iColumn);
 
 	MY_ASSERT_RET_VAL(pField, DT_UNKNOWN);
 
@@ -96,8 +87,8 @@ EnumDataType CMysqlRecordSet::GetDataType( unsigned int iColumn, unsigned int iB
 	case MYSQL_TYPE_DECIMAL:
 	case MYSQL_TYPE_NEWDECIMAL:
 		{
-			unsigned long  p = pField->length;     //字段长度
-			unsigned int   s = pField->decimals;     //字段小数位
+			auto p = pField->length;     //字段长度
+			auto s = pField->decimals;     //字段小数位
 
 			if ( s==0 && iBufSize<sizeof(short) )
 				return DT_INT8;
@@ -170,42 +161,42 @@ EnumDataType CMysqlRecordSet::GetDataType( unsigned int iColumn, unsigned int iB
 	return DT_UNKNOWN;
 }
 
-bool  CMysqlRecordSet::GetFieldList( void )
+bool  CMysqlRecordSet::getFieldList()
 {   
-	MY_ASSERT_RET_VAL(m_pResult, false);
+	MY_ASSERT_RET_VAL(pResult_, false);
 
-	m_mapFieldList.clear();
+	mapFieldList_.clear();
 
-	MYSQL_FIELD_OFFSET  iCurOffset = mysql_field_tell(m_pResult); // 记录第一列的位置
+	auto iCurOffset = mysql_field_tell(pResult_); // 记录第一列的位置
 
-	unsigned int iFieldNum =  mysql_num_fields(m_pResult);  // 字段数目
+	auto iFieldNum =  mysql_num_fields(pResult_);  // 字段数目
 
 	for(unsigned int i=0;i< iFieldNum;i++)
 	{
-		MYSQL_FIELD* pField = mysql_fetch_field(m_pResult);
+		auto pField = mysql_fetch_field(pResult_);
 		if( !pField )
 			return false;
 		
 	    // 转化为大写字符串
-	    std::string strUpperName = StrUtil::ToUpper(std::string(pField->name));
+	    auto strUpperName = StrUtil::ToUpper(std::string(pField->name));
 
-		m_mapFieldList.insert(std::map<std::string, unsigned int>::value_type(strUpperName,i));
+		mapFieldList_.insert(std::map<std::string, unsigned int>::value_type(strUpperName,i));
 	}
 
-	mysql_field_seek(m_pResult, iCurOffset);   // 回到第一列
+	mysql_field_seek(pResult_, iCurOffset);   // 回到第一列
 
 	return true;
 }
 
-bool  CMysqlRecordSet::GetFieldIndex( const char* szFieldName,unsigned int& iIndex )
+bool  CMysqlRecordSet::getFieldIndex( const char* szFieldName,unsigned int& iIndex )
 {
 	MY_ASSERT_RET_VAL(szFieldName,false);
 
-	std::string strNameUpper = StrUtil::ToUpper(std::string(szFieldName)); //转化为大写字符串
+	auto strNameUpper = StrUtil::ToUpper(std::string(szFieldName)); //转化为大写字符串
 
-	std::map<std::string,  unsigned int>::iterator iter = m_mapFieldList.find(strNameUpper);
+	auto iter = mapFieldList_.find(strNameUpper);
 
-	if( iter == m_mapFieldList.end() )
+	if( iter == mapFieldList_.end() )
 		return false;
 
 	iIndex = (*iter).second;
@@ -219,8 +210,8 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 			  unsigned int* iFactLen,
 			  EnumDataType eType  )
 {   
-    MY_ASSERT_RET_VAL(m_pMysqlConn, false);
-	MY_ASSERT_RET_VAL(m_pResult, false);
+    MY_ASSERT_RET_VAL(pMysqlConn_, false);
+	MY_ASSERT_RET_VAL(pResult_, false);
 	MY_ASSERT_RET_VAL(szFieldName, false);
 	MY_ASSERT_RET_VAL(pBuf, false);
 	MY_ASSERT_RET_VAL(iFactLen, false);
@@ -231,16 +222,15 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 		return false;
 	}
 
-
-    MYSQL_ROW  pRow = m_pResult->current_row;  //获取当前行
+    auto pRow = pResult_->current_row;  //获取当前行
 	MY_ASSERT_RET_VAL(pRow, false);
   
-    if( m_mapFieldList.empty() )
-		GetFieldList();           //字段名与序号的map
+    if( mapFieldList_.empty() )
+		getFieldList();           //字段名与序号的map
 
 	unsigned int iIndex(0);   //获取字段在该行记录中的下标
 
-	if( !GetFieldIndex(szFieldName, iIndex) )      //szFieldName是否为表的一个字段
+	if( !getFieldIndex(szFieldName, iIndex) )      //szFieldName是否为表的一个字段
          return false;
 
 	unsigned int iValLen = 0;  // 值长度
@@ -249,7 +239,7 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 	{
 	case DT_NUMBER:
 		{
-			EnumDataType eDataType = GetDataType(iIndex, iBufSize);
+			auto eDataType = getDataType(iIndex, iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -300,10 +290,10 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 		break;
 	case DT_TIME:
 		{
-			MYSQL_FIELD* pField = mysql_fetch_field_direct(m_pResult, iIndex);
+			auto pField = mysql_fetch_field_direct(pResult_, iIndex);
 			MY_ASSERT_RET_VAL(pField, false);
 
-			const char * czVal = pRow[iIndex];
+			auto czVal = pRow[iIndex];
 			if ( pField->length > 0 && czVal )
 			{   
 				iValLen = strlen(czVal);
@@ -331,10 +321,10 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 		break;
 	case DT_STRING:
  		{
-			MYSQL_FIELD* pField = mysql_fetch_field_direct(m_pResult, iIndex);
+			auto pField = mysql_fetch_field_direct(pResult_, iIndex);
 			MY_ASSERT_RET_VAL(pField, false);
 
-			const char * czVal = pRow[iIndex];
+			auto czVal = pRow[iIndex];
 			if ( pField->length > 0 && czVal )
 			{   
 				iValLen = strlen(czVal);
@@ -353,10 +343,10 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 		//mysql中没有CLOB类型
 	case DT_BLOB:
 		{
-			MYSQL_FIELD* pField = mysql_fetch_field_direct(m_pResult, iIndex);
+			auto pField = mysql_fetch_field_direct(pResult_, iIndex);
 			MY_ASSERT_RET_VAL(pField, false);
 
-		 	const char * czVal = pRow[iIndex];
+		 	auto czVal = pRow[iIndex];
 			if ( pField->length > 0 && czVal )
 			{   
 				iValLen = strlen(czVal);
@@ -374,7 +364,7 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 		break;
 	default:
 		{
-			EnumDataType eDataType = GetDataType(iIndex, iBufSize);
+			auto eDataType = getDataType(iIndex, iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -397,8 +387,8 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 			  unsigned int* iFactLen,
 			  EnumDataType eType )
 {
-	MY_ASSERT_RET_VAL(m_pMysqlConn, false);
-	MY_ASSERT_RET_VAL(m_pResult, false);
+	MY_ASSERT_RET_VAL(pMysqlConn_, false);
+	MY_ASSERT_RET_VAL(pResult_, false);
 	MY_ASSERT_RET_VAL(pBuf, false);
 	MY_ASSERT_RET_VAL(iFactLen, false);
 
@@ -419,9 +409,8 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
     iColumn = iColumn - 1;  // Column indexes start with 0 in MYSQL
 
 
-	MYSQL_ROW pRow = m_pResult->current_row;      //获取当前行
+	auto pRow = pResult_->current_row;      //获取当前行
 	MY_ASSERT_RET_VAL(pRow, false);
-
 
 	unsigned int iValLen = 0;  // 值长度
 
@@ -429,7 +418,7 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 	{
 	case DT_NUMBER:
 		{
-			EnumDataType eDataType = GetDataType(iColumn, iBufSize);
+			auto eDataType = getDataType(iColumn, iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -480,10 +469,10 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 		break;
 	case DT_TIME:
 		{
-			MYSQL_FIELD* pField = mysql_fetch_field_direct(m_pResult, iColumn);
+			auto pField = mysql_fetch_field_direct(pResult_, iColumn);
 			MY_ASSERT_RET_VAL(pField, false);
 
-			const char * czVal = pRow[iColumn];
+			auto czVal = pRow[iColumn];
 			if ( pField->length > 0 && czVal )
 			{   
 				iValLen = strlen(czVal);
@@ -510,10 +499,10 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 		break;
 	case DT_STRING:
 		{
-			MYSQL_FIELD* pField = mysql_fetch_field_direct(m_pResult, iColumn);
+			auto pField = mysql_fetch_field_direct(pResult_, iColumn);
 			MY_ASSERT_RET_VAL(pField, false);
 
-			const char * czVal = pRow[iColumn];
+			auto czVal = pRow[iColumn];
 			if ( pField->length > 0 && czVal )
 			{   
 				iValLen = strlen(czVal);
@@ -532,10 +521,10 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 		//mysql中没有CLOB类型
 	case DT_BLOB:
 		{
-			MYSQL_FIELD* pField = mysql_fetch_field_direct(m_pResult, iColumn);
+			auto pField = mysql_fetch_field_direct(pResult_, iColumn);
 			MY_ASSERT_RET_VAL(pField, false);
 
-            const char * czVal = pRow[iColumn];
+            auto czVal = pRow[iColumn];
 			if ( pField->length > 0 && czVal )
 			{   
 				iValLen = strlen(czVal);
@@ -552,7 +541,7 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 		break;
 	default:
 		{
-			EnumDataType eDataType = GetDataType(iColumn, iBufSize);
+			auto eDataType = getDataType(iColumn, iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -569,60 +558,47 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 	return true;
 }
 
-
-
-
-unsigned int CMysqlRecordSet::GetRowsMoved( void )
+unsigned int CMysqlRecordSet::GetRowsMoved()
 {
-	return m_iMoveRows;
+	return iMoveRows_;
 }
 
-
-unsigned int CMysqlRecordSet::GetColumns( void )
+unsigned int CMysqlRecordSet::GetColumns()
 {
-	MY_ASSERT_RET_VAL(m_pResult, 0);
-
-	return  mysql_num_fields(m_pResult);
+	MY_ASSERT_RET_VAL(pResult_, 0);
+	return  mysql_num_fields(pResult_);
 }
-
 
 const char*  CMysqlRecordSet::GetColumnName( unsigned int iColIndex )
 {    
-    MY_ASSERT_RET_VAL(m_pResult, NULL);
-	MY_ASSERT_RET_VAL(iColIndex>0, NULL);
+    MY_ASSERT_RET_VAL(pResult_, nullptr);
+	MY_ASSERT_RET_VAL(iColIndex>0, nullptr);
 	
-	MYSQL_FIELD* pField = mysql_fetch_field_direct(m_pResult, iColIndex-1);   // Column indexes start with 0 in MYSQL
-	MY_ASSERT_RET_VAL(pField, NULL);
+	auto pField = mysql_fetch_field_direct(pResult_, iColIndex-1);   // Column indexes start with 0 in MYSQL
+	MY_ASSERT_RET_VAL(pField, nullptr);
 	return pField->name;
 }
 
-
-
 void CMysqlRecordSet::SetBindRows( unsigned int iSize )
 {
-	 MY_ASSERT_RET(m_pStmt);
+	 MY_ASSERT_RET(pStmt_);
 	 MY_ASSERT_RET(iSize>0);
 
-
-	 unsigned long iColNum = mysql_stmt_param_count(m_pStmt);   //参数中字段的数目
+	 auto iColNum = mysql_stmt_param_count(pStmt_);   //参数中字段的数目
 	 MY_ASSERT_RET(iColNum>0);
 
-	 m_pBindParam = new MYSQL_BIND[iColNum];
-	 ::memset(m_pBindParam, 0, sizeof(MYSQL_BIND)*iColNum);
-	 m_iBindCols = iColNum;
+	 pBindParam_ = new MYSQL_BIND[iColNum];
+	 ::memset(pBindParam_, 0, sizeof(MYSQL_BIND)*iColNum);
+	 iBindCols_ = iColNum;
      
-	 m_iBindRows = iSize;
+	 iBindRows_ = iSize;
 }
 
-
-
-unsigned int CMysqlRecordSet::GetBindRows( void )
+unsigned int CMysqlRecordSet::GetBindRows()
 {
-	MY_ASSERT_RET_VAL(m_pStmt,0);
-
-	return m_iBindRows;
+	MY_ASSERT_RET_VAL(pStmt_,0);
+	return iBindRows_;
 }
-
 
 // 绑定字段的信息
 // iRowIndex: 行序号由0开始
@@ -637,17 +613,17 @@ bool CMysqlRecordSet::BindField( unsigned int iRowIndex,
 			   unsigned int iFactLen ,
 			   bool bNull  )
 {
-	MY_ASSERT_RET_VAL(m_pMysqlConn, false);
-	MY_ASSERT_RET_VAL(m_pStmt, false);
+	MY_ASSERT_RET_VAL(pMysqlConn_, false);
+	MY_ASSERT_RET_VAL(pStmt_, false);
 	MY_ASSERT_RET_VAL(pBuf, false);
-	MY_ASSERT_RET_VAL(iRowIndex<m_iBindRows, false);
-	MY_ASSERT_RET_VAL(iValueIndex<m_iBindCols, false);
+	MY_ASSERT_RET_VAL(iRowIndex<iBindRows_, false);
+	MY_ASSERT_RET_VAL(iValueIndex<iBindCols_, false);
 
 	switch ( eType )
 	{
 	case DT_NUMBER:
 		{
-			EnumDataType eDataType = GetDataType(iValueIndex , iBufSize);
+			auto eDataType = getDataType(iValueIndex , iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -659,115 +635,112 @@ bool CMysqlRecordSet::BindField( unsigned int iRowIndex,
 	case DT_INT8:
 		{
 			short iVal = *(Int8*)pBuf;
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_TINY;
-			m_pBindParam[iValueIndex].buffer = &iVal;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_TINY;
+			pBindParam_[iValueIndex].buffer = &iVal;
 		}
 
 		break;
 	case DT_UINT8:
 		{
 			unsigned short iVal = *(UInt8*)pBuf;
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_TINY;
-			m_pBindParam[iValueIndex].buffer = &iVal;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_TINY;
+			pBindParam_[iValueIndex].buffer = &iVal;
  
 		}
 		break;
 	case DT_INT16:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_SHORT;
-			m_pBindParam[iValueIndex].buffer = (short*)pBuf;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_SHORT;
+			pBindParam_[iValueIndex].buffer = (short*)pBuf;
 		}
 		break;
 	case DT_UINT16:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_SHORT;
-			m_pBindParam[iValueIndex].buffer = (short*)pBuf;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_SHORT;
+			pBindParam_[iValueIndex].buffer = (short*)pBuf;
 		}
 		break;
 	case DT_INT32:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_LONG;
-			m_pBindParam[iValueIndex].buffer = (int*)pBuf;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_LONG;
+			pBindParam_[iValueIndex].buffer = (int*)pBuf;
 		}
 		break;
 	case DT_UINT32:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_LONG;
-			m_pBindParam[iValueIndex].buffer = (unsigned int*)pBuf;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_LONG;
+			pBindParam_[iValueIndex].buffer = (unsigned int*)pBuf;
 		}
 		break;
 	case DT_INT64:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_LONGLONG;
-			m_pBindParam[iValueIndex].buffer = (__int64*)pBuf;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_LONGLONG;
+			pBindParam_[iValueIndex].buffer = (__int64*)pBuf;
 		}
 		break;
 	case DT_UINT64:
 		{
-		    m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_LONGLONG;
-			m_pBindParam[iValueIndex].buffer = (unsigned __int64*)pBuf;
+		    pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_LONGLONG;
+			pBindParam_[iValueIndex].buffer = (unsigned __int64*)pBuf;
 		}
 		break;
 	case DT_TIME:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_TIME;
-			m_pBindParam[iValueIndex].buffer_length = iFactLen;
-			m_pBindParam[iValueIndex].buffer = pBuf;
-			m_pBindParam[iValueIndex].is_null = (my_bool*)&bNull;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_TIME;
+			pBindParam_[iValueIndex].buffer_length = iFactLen;
+			pBindParam_[iValueIndex].buffer = pBuf;
+			pBindParam_[iValueIndex].is_null = (my_bool*)&bNull;
 		}
 		break;
 	case DT_FLOAT:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_FLOAT;
-			m_pBindParam[iValueIndex].buffer = (float*)pBuf;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_FLOAT;
+			pBindParam_[iValueIndex].buffer = (float*)pBuf;
 	
 		}
 		break;
 	case DT_DOUBLE:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_DOUBLE;
-			m_pBindParam[iValueIndex].buffer = (double*)pBuf;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_DOUBLE;
+			pBindParam_[iValueIndex].buffer = (double*)pBuf;
 		}
 		break;
 	case DT_STRING:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_STRING;
-			m_pBindParam[iValueIndex].buffer_length = iFactLen;
-			m_pBindParam[iValueIndex].buffer = pBuf;
-			m_pBindParam[iValueIndex].is_null = (my_bool*)&bNull;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_STRING;
+			pBindParam_[iValueIndex].buffer_length = iFactLen;
+			pBindParam_[iValueIndex].buffer = pBuf;
+			pBindParam_[iValueIndex].is_null = (my_bool*)&bNull;
 		}
 		break;
 	case DT_CLOB://mysql没有clob类型
 	case DT_BLOB:
 		{
-			m_pBindParam[iValueIndex].buffer_type = MYSQL_TYPE_BLOB;
-			m_pBindParam[iValueIndex].buffer_length = iFactLen;
-			m_pBindParam[iValueIndex].buffer = pBuf;
-			m_pBindParam[iValueIndex].is_null = (my_bool*)&bNull;
+			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_BLOB;
+			pBindParam_[iValueIndex].buffer_length = iFactLen;
+			pBindParam_[iValueIndex].buffer = pBuf;
+			pBindParam_[iValueIndex].is_null = (my_bool*)&bNull;
 		}
 		break;
 	default:
 		return false;
 	}
  
-
-	if( iValueIndex == m_iBindCols-1 )    // 每行最后一列 需要执行一次
+	if( iValueIndex == iBindCols_-1 )    // 每行最后一列 需要执行一次
 	{   
 		if ( iRowIndex == 0 )      // 只需在第一行绑定参数
-			if ( mysql_stmt_bind_param(m_pStmt, m_pBindParam) != 0 )
+			if ( mysql_stmt_bind_param(pStmt_, pBindParam_) != 0 )
 				return false;
 
-		if ( mysql_stmt_execute(m_pStmt) != 0 )
+		if ( mysql_stmt_execute(pStmt_) != 0 )
 			return false;
 
-		::memset(m_pBindParam, 0, sizeof(MYSQL_BIND)*m_iBindCols);   // 清空
+		::memset(pBindParam_, 0, sizeof(MYSQL_BIND)*iBindCols_);   // 清空
 
-		if ( iRowIndex == m_iBindRows -1 )   // 最后一行
-			m_bBindSuccess = true;
+		if ( iRowIndex == iBindRows_ -1 )   // 最后一行
+			bBindSuccess_ = true;
 	}
 
 	return true;
 }
-
-
 

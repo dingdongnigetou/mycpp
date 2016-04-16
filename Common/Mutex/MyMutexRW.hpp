@@ -44,15 +44,15 @@ namespace mycpp
 			{
 				sHadSRWlock_ = false;
 				InitializeCriticalSection(&hOS_.fallback.locker);
-				hOS_.fallback.hReadEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				MYABORTM(NULL != hOS_.fallback.hReadEvent,
+				hOS_.fallback.hReadEvent = CreateEvent(nullptr, true, false, nullptr);
+				MYABORTM(nullptr != hOS_.fallback.hReadEvent,
 					"MyMutexRW::MyMutexRW CreateEvent fail.");
-				hOS_.fallback.hWriteEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-				MYABORTM(NULL != hOS_.fallback.hWriteEvent,
+				hOS_.fallback.hWriteEvent = CreateEvent(nullptr, false, false, nullptr);
+				MYABORTM(nullptr != hOS_.fallback.hWriteEvent,
 					"MyMutexRW::MyMutexRW CreateEvent fail.");
 			}
 #else
-			MYABORTM(0 == pthread_rwlockattr_init(&attr_, NULL),
+			MYABORTM(0 == pthread_rwlockattr_init(&attr_, nullptr),
 				"MyMutexRW::MyMutexRW pthread_rwlockattr_init fail.");
 
 			//…Ë÷√–¥À¯”≈œ»
@@ -77,8 +77,8 @@ namespace mycpp
 
 				CloseHandle(hOS_.fallback.hReadEvent);
 				CloseHandle(hOS_.fallback.hWriteEvent);
-				hOS_.fallback.hReadEvent = NULL;
-				hOS_.fallback.hWriteEvent = NULL;
+				hOS_.fallback.hReadEvent = nullptr;
+				hOS_.fallback.hWriteEvent = nullptr;
 				DeleteCriticalSection(&hOS_.fallback.locker);
 			}
 #else

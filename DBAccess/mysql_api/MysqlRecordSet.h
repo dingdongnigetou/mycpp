@@ -15,49 +15,49 @@ public:
 	CMysqlRecordSet( MYSQL* pConn, MYSQL_STMT* pStmt );
 
 	// 析构函数
-	virtual ~CMysqlRecordSet(void);
+	virtual ~CMysqlRecordSet() override;
 
 	// 是否记录集尾部
-	virtual	bool Eof( void );
+	virtual	bool Eof() override;
 
 	// 移向最后一条记录
-	//virtual	bool MoveLast( void );
+	//virtual	bool MoveLast();
 
 	// 移向下一条记录
-	virtual	bool MoveNext( void );
+	virtual	bool MoveNext() override;
 
 	// 获取字段值 
-	// iFactLen: 实际长度可以填NULL
+	// iFactLen: 实际长度可以填nullptr
 	// eType: 数据类型
 	virtual bool GetValue( const char* szFieldName, 
 		void* pBuf,
 		unsigned int iBufSize,
 		unsigned int* iFactLen,
-		EnumDataType eType = DT_UNKNOWN );
+		EnumDataType eType = DT_UNKNOWN ) override;
 
 	// 获取取得当前行的第i列的值
-	// iFactLen: 实际长度可以填NULL
+	// iFactLen: 实际长度可以填nullptr
 	// eType: 数据类型
 	virtual bool GetValue( unsigned int iColumn, 
 		void* pBuf,
 		unsigned int iBufSize,
 		unsigned int* iFactLen,
-		EnumDataType eType = DT_UNKNOWN );
+		EnumDataType eType = DT_UNKNOWN ) override;
 
 	// 获取移动行数
-	virtual unsigned int GetRowsMoved( void );
+	virtual unsigned int GetRowsMoved() override;
 
 	// 获取列数
-	virtual unsigned int GetColumns( void );
+	virtual unsigned int GetColumns() override;
 
 	// 获取列名
-	virtual const char* GetColumnName( unsigned int iColIndex );
+	virtual const char* GetColumnName( unsigned int iColIndex ) override;
 
 	// 设置绑定记录行数
-	virtual void SetBindRows( unsigned int iSize );
+	virtual void SetBindRows( unsigned int iSize ) override;
 
 	// 获取绑定记录行数
-	virtual unsigned int GetBindRows( void );
+	virtual unsigned int GetBindRows() override;
 
 	// 绑定字段的信息
 	// iRowIndex: 行序号由0开始
@@ -70,39 +70,39 @@ public:
 		void *pBuf, 
 		unsigned int iBufSize = 0, 
 		unsigned int iFactLen = 0,
-		bool bNull = false );
+		bool bNull = false ) override;
 
-	bool IsBindSuccess( void ) { return m_bBindSuccess; };
-
-private:
-	EnumDataType GetDataType( unsigned int iColumn, unsigned int iBufSize );
-	bool  GetFieldList( void );
-	bool  GetFieldIndex( const char* szFieldName,unsigned int& iIndex );   //判断是否为表的一个字段
+	bool IsBindSuccess() { return bBindSuccess_; };
 
 private:
-	MYSQL*       m_pMysqlConn;
-	MYSQL_RES*   m_pResult;
-	MYSQL_STMT*  m_pStmt;
+	EnumDataType getDataType( unsigned int iColumn, unsigned int iBufSize );
+	bool  getFieldList();
+	bool  getFieldIndex( const char* szFieldName,unsigned int& iIndex );   //判断是否为表的一个字段
+
+private:
+	MYSQL*       pMysqlConn_ = nullptr;
+	MYSQL_RES*   pResult_ = nullptr;
+	MYSQL_STMT*  pStmt_ = nullptr;
     
 	//绑定是否成功
-	bool m_bBindSuccess;
+	bool bBindSuccess_ = false;
 
 	// 是否为记录集尾部
-	bool m_bEof;
+	bool bEof_ = false;
 
-	unsigned int m_iMoveRows;
+	unsigned int iMoveRows_ = 0;
 
 	// 绑定行数
-	unsigned int m_iBindRows;
+	unsigned int iBindRows_ = 0;
 
 	// 绑定列数
-	unsigned int m_iBindCols;
+	unsigned int iBindCols_ = 0;
     
 	//绑定参数数组
-	MYSQL_BIND* m_pBindParam;
+	MYSQL_BIND* pBindParam_ = nullptr;
     
 	//记录字段名字与字段位置
-	std::map<std::string, unsigned int>  m_mapFieldList;    
+	std::map<std::string, unsigned int>  mapFieldList_;    
 };
 
 #endif // __MYSQLRECORDSET_DEF_H__

@@ -4,24 +4,22 @@
 #include "AdoRecordSet.h"
 #include "AdoConnection.h"
 
-CAdoRecordSet::CAdoRecordSet(const char* szSql, CAdoConnection* pConn) :
-pRecordSet_(NULL)
-,pConn_(pConn)
+CAdoRecordSet::CAdoRecordSet(const char* szSql, CAdoConnection* pConn)
 {
 	pRecordSet_.CreateInstance("ADODB.Recordset");
-	Open(szSql);
+	open(szSql);
 }
 
 CAdoRecordSet::~CAdoRecordSet()
 {
 	if (IsOpen())
 	{
-		Close();
+		close();
 	}
-	if (pRecordSet_ != NULL)
+	if (pRecordSet_ != nullptr)
 	{
 		pRecordSet_.Release();
-		pRecordSet_ = NULL;
+		pRecordSet_ = nullptr;
 	}
 }
 
@@ -33,6 +31,7 @@ bool CAdoRecordSet::Eof()
 	{
 		if (pRecordSet_->RecordCount > 0 )
 		{
+			pConn_->ClearError();
 			return pRecordSet_->adoEOF == VARIANT_TRUE ? true : false;
 		}
 		else
@@ -41,7 +40,7 @@ bool CAdoRecordSet::Eof()
 		}
 		
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
 		return true;
@@ -57,21 +56,23 @@ bool CAdoRecordSet::IsOpen()
 	{
 		if (pRecordSet_->GetState() & adStateOpen)
 		{
+			pConn_->ClearError();
 			return true;
 		}
 		else
 		{
+			pConn_->SetLastError();
 			return false;
 		}
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
 		return false;
 	}
 }
 
-bool CAdoRecordSet::Open(const char* szSql)
+bool CAdoRecordSet::open(const char* szSql)
 {
 	DB_POINTER_CHECK_RET(pRecordSet_,false);
 
@@ -79,12 +80,12 @@ bool CAdoRecordSet::Open(const char* szSql)
 	{
 		if (IsOpen()) 
 		{
-			Close();
+			close();
 		}
 
 		pRecordSet_->PutFilter("");
 		pRecordSet_->CursorLocation	=	adUseClient;
-		HRESULT hr = pRecordSet_->Open(_variant_t(szSql),_variant_t((IDispatch*)pConn_->GetRawConnRef(), true),
+		auto hr = pRecordSet_->Open(_variant_t(szSql),_variant_t((IDispatch*)pConn_->GetRawConnRef(), true),
 			adOpenStatic, adLockOptimistic, adCmdText);
 
 		if(!SUCCEEDED(hr))   
@@ -99,14 +100,14 @@ bool CAdoRecordSet::Open(const char* szSql)
 
 		return true;
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
 		return false;
 	}
 }
 
-bool CAdoRecordSet::Close()
+bool CAdoRecordSet::close()
 {
 	DB_POINTER_CHECK_RET(pRecordSet_,false);
 
@@ -114,9 +115,9 @@ bool CAdoRecordSet::Close()
 	{
 		if (pRecordSet_->State != adStateClosed)
 		{
-			if (GetEditMode() == adEditNone)
+			if (getEditMode() == adEditNone)
 			{
-				CancelUpdate();
+				cancelUpdate();
 			}
 
 			pRecordSet_->Close();
@@ -128,14 +129,14 @@ bool CAdoRecordSet::Close()
 			return false;
 		}
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
 	    return false;
 	}
 }
 
-bool CAdoRecordSet::GetEditMode()
+bool CAdoRecordSet::getEditMode()
 {
 	DB_POINTER_CHECK_RET(pRecordSet_,false);
 
@@ -143,20 +144,20 @@ bool CAdoRecordSet::GetEditMode()
 	{
 		return pRecordSet_->GetEditMode() == adEditNone ? true : false;
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
 		return false;
 	} 
 }
 
-bool CAdoRecordSet::CancelUpdate()
+bool CAdoRecordSet::cancelUpdate()
 {
 	DB_POINTER_CHECK_RET(pRecordSet_,false);
 
 	try
 	{
-		if (GetEditMode() || pRecordSet_->CancelUpdate() == S_OK)
+		if (getEditMode() || pRecordSet_->CancelUpdate() == S_OK)
 		{
 			return true;
 		}
@@ -165,7 +166,7 @@ bool CAdoRecordSet::CancelUpdate()
 			return false;
 		}
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
 		return false;
@@ -180,7 +181,7 @@ bool CAdoRecordSet::MoveNext()
 	{
 		return SUCCEEDED(pRecordSet_->MoveNext());
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
 		return false;
@@ -197,21 +198,20 @@ bool CAdoRecordSet::MoveNext()
 	}\
 } while(0)
 
-
-FieldPtr  CAdoRecordSet::GetField(const char* szFieldName)
+FieldPtr CAdoRecordSet::getField(const char* szFieldName)
 {
 	try
 	{
-		return GetFields()->GetItem(_variant_t(szFieldName));
+		return getFields()->GetItem(_variant_t(szFieldName));
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
-		return NULL;
+		return nullptr;
 	}
 }
 
-FieldsPtr CAdoRecordSet::GetFields()
+FieldsPtr CAdoRecordSet::getFields()
 {
 	DB_POINTER_CHECK_RET(pRecordSet_,false);
 
@@ -219,10 +219,10 @@ FieldsPtr CAdoRecordSet::GetFields()
 	{
 		return pRecordSet_->GetFields();
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		pConn_->SetLastError();
-		return NULL;
+		return nullptr;
 	} 
 }
 
@@ -241,7 +241,7 @@ bool CAdoRecordSet::GetValue( const char* szFieldName,
 		return false;
 	}
 
-	if ( GetField(szFieldName) == NULL )  // 判断是否存在
+	if ( getField(szFieldName) == nullptr )  // 判断是否存在
 	{
 		pConn_->SetLastError();
 		return false;
@@ -249,7 +249,7 @@ bool CAdoRecordSet::GetValue( const char* szFieldName,
 
 	unsigned int iValLen = 0;  // 值长度
 
-	_variant_t value = pRecordSet_->GetCollect(_variant_t(szFieldName));
+	auto value = pRecordSet_->GetCollect(_variant_t(szFieldName));
 	switch ( eType )
 	{
 	case DT_INT8:
@@ -306,7 +306,7 @@ bool CAdoRecordSet::GetValue( const char* szFieldName,
 	case DT_TIME:
 	case DT_STRING:
 	    {
-			std::string szValue = std::string((char*)(_bstr_t)value);
+			auto szValue = std::string((char*)(_bstr_t)value);
 
 			iValLen = szValue.size();
 			iValLen = iValLen > iBufSize ? iBufSize : iValLen;
@@ -317,7 +317,7 @@ bool CAdoRecordSet::GetValue( const char* szFieldName,
 		break;
 	default:
 		{
-			EnumDataType eDataType = GetDataType(szFieldName);
+			auto eDataType = getDataType(szFieldName);
 			if ( eDataType == DT_UNKNOWN)
 				return false;
 
@@ -326,7 +326,8 @@ bool CAdoRecordSet::GetValue( const char* szFieldName,
 		}
 		break;
 	}
-		*iFactLen = iValLen;
+
+	*iFactLen = iValLen;
 
 	return true;
 }
@@ -364,12 +365,14 @@ unsigned int CAdoRecordSet::GetColumns()
 {
 	DB_POINTER_CHECK_RET(pRecordSet_,0);
 
+	return 0;
 }
 
 const char* CAdoRecordSet::GetColumnName( unsigned int iColIndex )
 {
-	DB_POINTER_CHECK_RET(pRecordSet_,NULL);
+	DB_POINTER_CHECK_RET(pRecordSet_,nullptr);
 
+	return nullptr;
 }
 
 void CAdoRecordSet::SetBindRows( unsigned int iSize )
@@ -393,7 +396,7 @@ bool CAdoRecordSet::BindField( unsigned int iRowIndex,
 	return true;
 }
 
-std::string CAdoRecordSet::ToBindName(unsigned int iValueIndex)
+std::string CAdoRecordSet::toBindName(unsigned int iValueIndex)
 {
 	std::ostringstream ss;
 	ss.str("");
@@ -401,9 +404,9 @@ std::string CAdoRecordSet::ToBindName(unsigned int iValueIndex)
 	return ss.str();
 }
 
-EnumDataType CAdoRecordSet::GetDataType(const char* szFieldName)
+EnumDataType CAdoRecordSet::getDataType(const char* szFieldName)
 {
-	DataTypeEnum type = GetField(szFieldName)->GetType();
+	auto type = getField(szFieldName)->GetType();
 	switch (type)
 	{
 	case adTinyInt:

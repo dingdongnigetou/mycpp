@@ -19,7 +19,7 @@
 
 #define DB_POINTER_CHECK_RET(p,ret) do  \
 { \
-	MYASSERT(p!=NULL); \
+	MYASSERT(p!=nullptr); \
 	if ( !p ) \
 	return ret; \
 } while (0)

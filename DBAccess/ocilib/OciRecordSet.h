@@ -17,49 +17,49 @@ public:
 	COciRecordSet( OCI_Statement *pStmt, COciConnection* pOciConn );
 
 	// 析构函数
-	virtual ~COciRecordSet(void);
+	virtual ~COciRecordSet() override;
 
 	// 是否记录集尾部
-	virtual	bool Eof( void );
+	virtual	bool Eof() override;
 
 	// 移向最后一条记录
-	//virtual	bool MoveLast( void );
+	//virtual	bool MoveLast();
 
 	// 移向下一条记录
-	virtual	bool MoveNext( void );
+	virtual	bool MoveNext() override;
 
 	// 获取字段值 
-	// iFactLen: 实际长度可以填NULL
+	// iFactLen: 实际长度可以填nullptr
 	// eType: 数据类型
 	virtual bool GetValue( const char* szFieldName, 
 		void* pBuf,
 		unsigned int iBufSize,
 		unsigned int* iFactLen,
-		EnumDataType eType = DT_UNKNOWN );
+		EnumDataType eType = DT_UNKNOWN ) override;
 
 	// 获取取得当前行的第i列的值
-	// iFactLen: 实际长度可以填NULL
+	// iFactLen: 实际长度可以填nullptr
 	// eType: 数据类型
 	virtual bool GetValue( unsigned int iColumn, 
 		void* pBuf,
 		unsigned int iBufSize,
 		unsigned int* iFactLen,
-		EnumDataType eType = DT_UNKNOWN );
+		EnumDataType eType = DT_UNKNOWN ) override;
 
 	// 获取移动行数
-	virtual unsigned int GetRowsMoved( void );
+	virtual unsigned int GetRowsMoved() override;
 
 	// 获取列数
-	virtual unsigned int GetColumns( void );
+	virtual unsigned int GetColumns() override;
 
 	// 获取列名
-	virtual const char* GetColumnName( unsigned int iColIndex );
+	virtual const char* GetColumnName( unsigned int iColIndex ) override;
 
 	// 设置绑定记录行数
-	virtual void SetBindRows( unsigned int iSize );
+	virtual void SetBindRows( unsigned int iSize ) override;
 
 	// 获取绑定记录行数
-	virtual unsigned int GetBindRows( void );
+	virtual unsigned int GetBindRows() override;
 
 	// 绑定字段的信息
 	// iRowIndex: 行序号由0开始
@@ -72,53 +72,53 @@ public:
 		void *pBuf, 
 		unsigned int iBufSize = 0, 
 		unsigned int iFactLen = 0,
-		bool bNull = false );
+		bool bNull = false ) override;
 
-	OCI_Statement* GetOCIStatement( void ) { return m_pStmt; };
+	OCI_Statement* GetOCIStatement() { return pStmt_; };
 
 private:
-	bool GetLob( const char* szFieldName,
+	bool getLob( const char* szFieldName,
 		void* pBuf, 
 		unsigned int iBufSize, 
 		unsigned int* iFactLen,
 		bool bChar );
 
-	bool GetLob( unsigned int iColumn,
+	bool getLob( unsigned int iColumn,
 		void* pBuf, 
 		unsigned int iBufSize, 
 		unsigned int* iFactLen,
 		bool bChar );
 
-	std::string ToBindName(unsigned int iValueIndex);
+	std::string toBindName(unsigned int iValueIndex);
 
-	EnumDataType GetDataType( unsigned int iColumn, unsigned int iBufSize );
+	EnumDataType getDataType( unsigned int iColumn, unsigned int iBufSize );
 
 private:
-	OCI_Statement *m_pStmt;
-	OCI_Resultset *m_pResultSet;
+	OCI_Statement *pStmt_ = nullptr;
+	OCI_Resultset *pResultSet_ = nullptr;
 
-	COciConnection* m_pOciConn;
+	COciConnection* pOciConn_ = nullptr;
 
 	// 是否为记录集尾部
-	bool m_bEof;
+	bool bEof_ = false;
 
 	// 绑定行数
-	unsigned int m_iBindRows;
+	unsigned int iBindRows_ = 0;
 
 	// 整型、字符等参数列表
-	std::map<unsigned int, void*>  m_mapParamsList;
+	std::map<unsigned int, void*>  mapParamsList_;
 
 	//  OCI_Date参数列表
-	std::map<unsigned int, OCI_Date*> m_mapDateList;
+	std::map<unsigned int, OCI_Date*> mapDateList_;
 
 	// OCI_Lob参数列表
-	std::map<unsigned int, OCI_Lob*> m_mapLobList;
+	std::map<unsigned int, OCI_Lob*> mapLobList_;
 
 	//  OCI_Date参数数组列表
-	std::map<unsigned int, OCI_Date**> m_mapDateArrayList;
+	std::map<unsigned int, OCI_Date**> mapDateArrayList_;
 
 	// OCI_Lob参数数组列表
-	std::map<unsigned int, OCI_Lob**> m_mapLobArrayList;
+	std::map<unsigned int, OCI_Lob**> mapLobArrayList_;
 };
 
 #endif // __OCIRECORDSET_DEF_H__

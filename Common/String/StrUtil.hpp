@@ -9,11 +9,7 @@
 #include <string>
 #include <stdarg.h>
 
-#if defined(UNICODE) || defined(_UNICODE)
-typedef std::wstring  tstring;
-#else
-typedef std::string   tstring;
-#endif
+#include "string.hpp"
 
 namespace mycpp
 {
@@ -194,7 +190,7 @@ namespace mycpp
 				{
 					::free(pBuffer);
 				}
-				pBuffer = NULL;
+				pBuffer = nullptr;
 				size *= 2;
 				if (size > MAX_STRING_LENGHT)
 				{
@@ -203,7 +199,7 @@ namespace mycpp
 				}
 
 				pBuffer = (char*) ::malloc(size);
-				MYABORT(pBuffer != NULL);
+				MYABORT(pBuffer != nullptr);
 			}
 			if (pBuffer && pBuffer != sBuffer)
 			{

@@ -22,7 +22,7 @@
 #define DB_API extern "C" 
 #endif
 
-typedef enum EnumDBApiRet
+enum EnumDBApiRet
 {
 	RETCODE_SUCCESS = 0,
 	RETCODE_INITIALIZE_FAIL,
@@ -38,7 +38,7 @@ typedef enum EnumDBApiRet
 };
 
 
-typedef enum EnumDriverType
+enum EnumDriverType
 {
 	ODBC = 0,
 	OCI,
@@ -47,7 +47,7 @@ typedef enum EnumDriverType
 	// to add:
 };
 
-typedef enum EnumDataType
+enum EnumDataType
 {
 	DT_NUMBER = 0,   // DT_INT8, DT_INT16, DT_INT32, DT_INT64, DT_FLOAT, DT_DOUBLE
 	DT_INT8,
@@ -72,25 +72,25 @@ typedef enum EnumDataType
 class IRecordSet
 {
 protected:
-	IRecordSet(void){};
+	IRecordSet(){};
 
 public:
-	virtual ~IRecordSet(void){};
+	virtual ~IRecordSet(){};
 
 public:
 
 	// 是否记录集尾部
-	virtual	bool Eof( void ) = 0;
+	virtual	bool Eof() = 0;
 
 	// 移向最后一条记录
-	//virtual	bool MoveLast( void ) = 0;
+	//virtual	bool MoveLast() = 0;
 
 	// 移向下一条记录
 	// 返回值: true 成功  false 需要判断Eof(),是结尾还是错误,错误则可以从GSIConnection获取错误码和错误信息
-	virtual	bool MoveNext( void ) = 0;
+	virtual	bool MoveNext() = 0;
 
 	// 获取字段值 
-	// iFactLen: 实际长度,可以填NULL
+	// iFactLen: 实际长度,可以填nullptr
 	// eType: 数据类型
 	virtual bool GetValue( const char* szFieldName, 
 		void* pBuf,
@@ -100,7 +100,7 @@ public:
 
 	// 获取取得当前行的第i列的值
 	// iColumn: 列序号由1开始
-	// iFactLen: 实际长度,可以填NULL
+	// iFactLen: 实际长度,可以填nullptr
 	// eType: 数据类型
 	virtual bool GetValue( unsigned int iColumn, 
 		void* pBuf,
@@ -109,10 +109,10 @@ public:
 		EnumDataType eType = DT_UNKNOWN ) = 0;
 
 	// 获取移动行数
-	virtual unsigned int GetRowsMoved( void ) = 0;
+	virtual unsigned int GetRowsMoved() = 0;
 
 	// 获取列数
-	virtual unsigned int GetColumns( void ) = 0;
+	virtual unsigned int GetColumns() = 0;
 
 	// 获取列名
 	virtual const char* GetColumnName( unsigned int iColIndex ) = 0;
@@ -122,7 +122,7 @@ public:
 	virtual void SetBindRows( unsigned int iSize ) = 0;
 
 	// 获取绑定记录行数
-	virtual unsigned int GetBindRows( void ) = 0;
+	virtual unsigned int GetBindRows() = 0;
 
 	// 绑定字段的信息
 	// iRowIndex: 行序号由0开始
@@ -142,10 +142,10 @@ public:
 class IConnection
 {
 protected:
-	IConnection(void){};
+	IConnection(){};
 
 public:
-	virtual ~IConnection(void){};
+	virtual ~IConnection(){};
 
 public:
 
@@ -183,19 +183,19 @@ public:
 	virtual	IRecordSet* ExecutePageQuery( const char* szSql, int iStartRow, int iRowNum ) = 0;	
 
 	// 开启事务
-	virtual	bool BeginTrans( void ) = 0;
+	virtual	bool BeginTrans() = 0;
 
 	// 回滚事务
-	virtual	void Rollback( void ) = 0;
+	virtual	void Rollback() = 0;
 
 	// 提交事务
-	virtual	bool Commit( void ) = 0;
+	virtual	bool Commit() = 0;
 
 	// 获取错误码
-	virtual EnumDBApiRet GetErrorCode( void ) = 0;
+	virtual EnumDBApiRet GetErrorCode() = 0;
 
 	// 获取错误信息
-	virtual const char* GetErrorMessage( void ) = 0;
+	virtual const char* GetErrorMessage() = 0;
 
 
 	// 将字符串转换成标准的数据库的时间字符串
@@ -224,9 +224,9 @@ public:
 
 
 	// 获取当前时间
-	virtual const char* GetSysTime( void ) = 0;
-	virtual const char* GetSysDate( void ) = 0;
-	virtual const char* GetSysDateTime( void ) = 0;
+	virtual const char* GetSysTime() = 0;
+	virtual const char* GetSysDate() = 0;
+	virtual const char* GetSysDateTime() = 0;
 
 };
 
@@ -235,14 +235,14 @@ public:
 class IConnectionPool 
 {
 protected:
-	IConnectionPool(void){};
+	IConnectionPool(){};
 
 public:
-	virtual ~IConnectionPool(void){};
+	virtual ~IConnectionPool(){};
 
 public:
 	// 设置参数
-	// szHost:     数据库主机,本地数据数据库填NULL
+	// szHost:     数据库主机,本地数据数据库填nullptr
 	// szDataBase: 数据库名
 	// szUserName: 连接数据库用户名
 	// szPassword: 连接数据库密码
@@ -259,7 +259,7 @@ public:
 
 	// 获取连接
 	// eError: 获取到连接为空时，可根据错误码来查看原因
-	virtual IConnection* GetConnection( EnumDBApiRet* eError=NULL ) = 0;
+	virtual IConnection* GetConnection( EnumDBApiRet* eError=nullptr ) = 0;
 
 	// 释放连接
 	virtual	void ReleaseConnection( IConnection** pcsConn ) = 0;

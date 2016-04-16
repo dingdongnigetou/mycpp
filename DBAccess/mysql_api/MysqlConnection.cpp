@@ -6,53 +6,48 @@
 #include "errmsg.h"
 #include "mysqld_error.h"
 
-
 CMysqlConnection::CMysqlConnection( const std::string& strHost,
 								   const std::string& strDataBase,
 								   const std::string& strUserName,
 								   const std::string& strPassword,
 								   UInt16 iPort  )
-								   
-:m_strHost(strHost)
-,m_strDB(strDataBase)
-,m_strUser(strUserName)
-,m_strPwd(strPassword)
-,m_iPort(iPort)   // 默认填0
-,m_pMysqlConn(NULL)
+:strHost_(strHost)
+,strDB_(strDataBase)
+,strUser_(strUserName)
+,strPwd_(strPassword)
 {
 	if ( strHost.empty() )
-		m_strHost = "localhost";
+		strHost_ = "localhost";
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 }
 
-CMysqlConnection::~CMysqlConnection(void)
+CMysqlConnection::~CMysqlConnection()
 {
-	DisconnectDB();
+	disconnectDB();
 }
 
-
-bool CMysqlConnection::ConnectDB( void )
+bool CMysqlConnection::ConnectDB()
 {
-	MYASSERT( NULL == m_pMysqlConn );
+	MYASSERT( nullptr == pMysqlConn_ );
 
-	MYSQL *pConn = mysql_init(NULL);
+	auto pConn = mysql_init(nullptr);
 
-	m_pMysqlConn = pConn;
+	pMysqlConn_ = pConn;
 
-	pConn = mysql_real_connect(m_pMysqlConn, 
-		m_strHost.c_str(),
-		m_strUser.c_str(),
-		m_strPwd.c_str(),
-		m_strDB.c_str(), 
-		m_iPort,
-		NULL,
+	pConn = mysql_real_connect(pMysqlConn_, 
+		strHost_.c_str(),
+		strUser_.c_str(),
+		strPwd_.c_str(),
+		strDB_.c_str(), 
+		iPort_,
+		nullptr,
 		0);
 
 	if ( !pConn )
 	{
-		ErrorPrint();
-		m_pMysqlConn = NULL;
+		errorPrint();
+		pMysqlConn_ = nullptr;
 		return false;
 	}
 
@@ -70,67 +65,63 @@ void CMysqlConnection::ReleaseRecordSet( IRecordSet** pcsRecordSet )
 	MY_ASSERT_RET(*pcsRecordSet);
 
 	delete *pcsRecordSet;
-	*pcsRecordSet = NULL;
-
+	*pcsRecordSet = nullptr;
 }
-
 
 IRecordSet*   CMysqlConnection::PrepareBind( const char* szSql )
 {
-	//GS_ASSERT_RET_VAL(m_pMysqlConn, false);
-	MY_ASSERT_RET_VAL(szSql, NULL);
+	MY_ASSERT_RET_VAL(szSql, nullptr);
 
-	if ( !TestConnectAlive() )
-		return NULL;
+	if ( !testConnectAlive() )
+		return nullptr;
 
-	MYSQL_STMT *pStmt = NULL;
-	pStmt = mysql_stmt_init(m_pMysqlConn);
-	MYASSERT( NULL != pStmt );
+	MYSQL_STMT *pStmt = nullptr;
+	pStmt = mysql_stmt_init(pMysqlConn_);
+	MYASSERT( nullptr != pStmt );
 
 	if ( !pStmt )
 	{
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	if ( 0 != mysql_stmt_prepare(pStmt, szSql,strlen(szSql)) )
 	{
-		ErrorHandle();
+		errorHandle();
 		mysql_stmt_close(pStmt);    // TODO:  需要测试!!!
-		pStmt = NULL;
-		return NULL;
+		pStmt = nullptr;
+		return nullptr;
 	}
 	//关闭自动提交
-	if ( 0 != mysql_autocommit(m_pMysqlConn, 0) )
+	if ( 0 != mysql_autocommit(pMysqlConn_, 0) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
 	// pStmt 由类CMysqlRecordSet释放
-	 return new CMysqlRecordSet(m_pMysqlConn, pStmt);
+	 return new CMysqlRecordSet(pMysqlConn_, pStmt);
 }
 
 bool CMysqlConnection::ExecuteBind( IRecordSet* pcsRecordSet )
 {
-	//GS_ASSERT_RET_VAL(m_pMysqlConn, false);
 	MY_ASSERT_RET_VAL(pcsRecordSet, false);
 
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
     //开启自动提交
-	if ( 0 != mysql_autocommit(m_pMysqlConn, 1) )
+	if ( 0 != mysql_autocommit(pMysqlConn_, 1) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
-	CMysqlRecordSet *pMysqlRecSet =(CMysqlRecordSet*)pcsRecordSet;
+	auto pMysqlRecSet =(CMysqlRecordSet*)pcsRecordSet;
 
 	if ( !pMysqlRecSet->IsBindSuccess() )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -139,17 +130,16 @@ bool CMysqlConnection::ExecuteBind( IRecordSet* pcsRecordSet )
 
 bool CMysqlConnection::ExecuteSql( const char* szSql )
 {
-	//GS_ASSERT_RET_VAL(m_pMysqlConn, false);
 	MY_ASSERT_RET_VAL(szSql, false);
 	
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
     
-    int res = mysql_query(m_pMysqlConn, szSql);
+    auto res = mysql_query(pMysqlConn_, szSql);
 
 	if( 0 != res)
     {
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -158,12 +148,10 @@ bool CMysqlConnection::ExecuteSql( const char* szSql )
 
 bool CMysqlConnection::GetLastInsertID( const char* szSeqName, signed __int64& lRowID )
 {
-	//GS_ASSERT_RET_VAL(m_pMysqlConn, false);
-   
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
-	my_ulonglong lInsertID = mysql_insert_id(m_pMysqlConn);
+	auto lInsertID = mysql_insert_id(pMysqlConn_);
 	if( lInsertID == 0 )
 	    return false;
 
@@ -172,39 +160,32 @@ bool CMysqlConnection::GetLastInsertID( const char* szSeqName, signed __int64& l
 	return true;
 }
 
-
-
-
-
 IRecordSet*  CMysqlConnection::ExecuteQuery( const char* szSql )
 {
-	MY_ASSERT_RET_VAL(szSql, NULL);
+	MY_ASSERT_RET_VAL(szSql, nullptr);
 
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
-	if ( 0 != mysql_query(m_pMysqlConn,szSql) )
+	if ( 0 != mysql_query(pMysqlConn_,szSql) )
 	{
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
-	return new CMysqlRecordSet(m_pMysqlConn,NULL);
+	return new CMysqlRecordSet(pMysqlConn_,nullptr);
 }
-
-
 
 IRecordSet*  CMysqlConnection::ExecutePageQuery( const char* szSql, int iStartRow, int iRowNum )
 {
 
-	MY_ASSERT_RET_VAL(szSql, NULL);
+	MY_ASSERT_RET_VAL(szSql, nullptr);
 
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
 	// 合成完整SQL语句
 	std::ostringstream ssFullSql;
-
 
 	ssFullSql << szSql;
 	//添加SQL后面语句
@@ -216,85 +197,72 @@ IRecordSet*  CMysqlConnection::ExecutePageQuery( const char* szSql, int iStartRo
 	return ExecuteQuery(ssFullSql.str().c_str());
 }
 
-
-bool  CMysqlConnection::BeginTrans( void )
+bool  CMysqlConnection::BeginTrans()
 {
-
-	if ( !TestConnectAlive() )
+	if ( !testConnectAlive() )
 		return false;
 
-	MY_ASSERT_RET_VAL(m_pMysqlConn, false);
-
-	
-// 	if ( 0 != mysql_query(m_pMysqlConn,"START TRANSACTION")  )
-// 	{
-// 		ErrorHandle();
-// 		return false;
-// 	}
+	MY_ASSERT_RET_VAL(pMysqlConn_, false);
 
     //关闭自动提交
-	if ( 0 != mysql_autocommit(m_pMysqlConn, 0) )
+	if ( 0 != mysql_autocommit(pMysqlConn_, 0) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
 	return true;
 }
 
-
-void  CMysqlConnection::Rollback( void )
+void  CMysqlConnection::Rollback()
 {
-	MY_ASSERT_RET(m_pMysqlConn);
+	MY_ASSERT_RET(pMysqlConn_);
 
 	// 回滚
-	if (  0 != mysql_rollback(m_pMysqlConn) )
+	if (  0 != mysql_rollback(pMysqlConn_) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return ;
 	}
 
 	// 设置自动提交
-	if ( 0 != mysql_autocommit(m_pMysqlConn, 1) )
+	if ( 0 != mysql_autocommit(pMysqlConn_, 1) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return ;
 	}
 }
 
-bool CMysqlConnection::Commit( void )
+bool CMysqlConnection::Commit()
 {
-	MY_ASSERT_RET_VAL(m_pMysqlConn, false);
+	MY_ASSERT_RET_VAL(pMysqlConn_, false);
 
 	// 事务提交
-	if (  0 != mysql_commit(m_pMysqlConn) )
+	if (  0 != mysql_commit(pMysqlConn_) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
 	//设置自动提交
-	if ( 0 != mysql_autocommit(m_pMysqlConn, 1) )
+	if ( 0 != mysql_autocommit(pMysqlConn_, 1) )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
 	return true;
 }
 
-
-
 // 获取错误码
-EnumDBApiRet CMysqlConnection::GetErrorCode( void )
+EnumDBApiRet CMysqlConnection::GetErrorCode()
 {
-	if ( !m_pMysqlConn )
+	if ( !pMysqlConn_ )
 		return RETCODE_INITIALIZE_FAIL;
     
-	UInt32 iErrCode = mysql_errno(m_pMysqlConn);
+	auto iErrCode = mysql_errno(pMysqlConn_);
 	switch ( iErrCode )
 	{
-
 	case ER_ACCESS_DENIED_ERROR: //不能连接数据库，用户名或密码错误
 	case ER_DBACCESS_DENIED_ERROR:  //当前用户没有访问数据库的权限
 		return RETCODE_USERNAME_PASSWORD_ERROR;
@@ -325,25 +293,22 @@ EnumDBApiRet CMysqlConnection::GetErrorCode( void )
 	return RETCODE_UNKNOWN_ERROR;
 }
 
-
-const char* CMysqlConnection::GetErrorMessage( void )
+const char* CMysqlConnection::GetErrorMessage()
 {
-	//MYASSERT( NULL != m_pMysqlConn );
-	if ( !m_pMysqlConn )
+	if ( !pMysqlConn_ )
 		return "mysql api initialize fail!";
 
-	const char *pErr = mysql_error(m_pMysqlConn);
+	auto pErr = mysql_error(pMysqlConn_);
 	if ( !pErr )
 		return "no error.";
 
     return  pErr;
 }
 
-
 const char*  CMysqlConnection::ToTime(const char* szDateTime)
 {
 
-	MY_ASSERT_RET_VAL(szDateTime, NULL);
+	MY_ASSERT_RET_VAL(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -352,16 +317,12 @@ const char*  CMysqlConnection::ToTime(const char* szDateTime)
 		"STR_TO_DATE('%s', '%%H:%%i:%%s')",
 		szDateTime);
 
-
 	return m_szDateTime;
 }
 
-
-
 const char*  CMysqlConnection::ToDate(const char* szDateTime)
 {
-
-	MY_ASSERT_RET_VAL(szDateTime, NULL);
+	MY_ASSERT_RET_VAL(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -373,11 +334,9 @@ const char*  CMysqlConnection::ToDate(const char* szDateTime)
 	return m_szDateTime;
 }
 
-
-
 const char*  CMysqlConnection::ToDateTime(const char* szDateTime)
 {
-	MY_ASSERT_RET_VAL(szDateTime, NULL);
+	MY_ASSERT_RET_VAL(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -391,8 +350,7 @@ const char*  CMysqlConnection::ToDateTime(const char* szDateTime)
 
 const char*  CMysqlConnection::TimeToStr(const char* szDateTime)
 {
-
-	MY_ASSERT_RET_VAL(szDateTime, NULL);
+	MY_ASSERT_RET_VAL(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -405,7 +363,7 @@ const char*  CMysqlConnection::TimeToStr(const char* szDateTime)
 
 const char*  CMysqlConnection::DateToStr(const char* szDateTime)
 {
-	MY_ASSERT_RET_VAL(szDateTime, NULL);
+	MY_ASSERT_RET_VAL(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -418,8 +376,7 @@ const char*  CMysqlConnection::DateToStr(const char* szDateTime)
 
 const char*  CMysqlConnection::DateTimeToStr(const char* szDateTime)
 {
-
-	MY_ASSERT_RET_VAL(szDateTime, NULL);
+	MY_ASSERT_RET_VAL(szDateTime, nullptr);
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 
@@ -430,18 +387,18 @@ const char*  CMysqlConnection::DateTimeToStr(const char* szDateTime)
 	return m_szDateTime;
 }
 
-const char*  CMysqlConnection::GetSysTime( void )
+const char*  CMysqlConnection::GetSysTime()
 {
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 	MYSNPRINTF(m_szDateTime,
 		sizeof(m_szDateTime)-1,
 		"SELECT CURTIME()");
 
-	IRecordSet *pRescordSet = ExecuteQuery(m_szDateTime);
+	auto pRescordSet = ExecuteQuery(m_szDateTime);
 	if ( !pRescordSet )
 	{
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
@@ -450,28 +407,26 @@ const char*  CMysqlConnection::GetSysTime( void )
 	if ( !pRescordSet->GetValue( 1, m_szDateTime, sizeof(m_szDateTime), &iFactLen ) )
 	{
 		ReleaseRecordSet(&pRescordSet);
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	ReleaseRecordSet(&pRescordSet);
 
 	return m_szDateTime;
-	
 }
 
-const char*  CMysqlConnection::GetSysDate( void )
+const char*  CMysqlConnection::GetSysDate()
 {
-
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 	MYSNPRINTF(m_szDateTime,
 		sizeof(m_szDateTime)-1,
 		"SELECT CURDATE()");
     
-	IRecordSet *pRescordSet = ExecuteQuery(m_szDateTime);
+	auto pRescordSet = ExecuteQuery(m_szDateTime);
 	if ( !pRescordSet )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -481,8 +436,8 @@ const char*  CMysqlConnection::GetSysDate( void )
 	if ( !pRescordSet->GetValue( 1, m_szDateTime, sizeof(m_szDateTime), &iFactLen ) )
 	{
 		ReleaseRecordSet(&pRescordSet);
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	ReleaseRecordSet(&pRescordSet);
@@ -490,17 +445,17 @@ const char*  CMysqlConnection::GetSysDate( void )
 	return m_szDateTime;
 }
 
-const char*  CMysqlConnection::GetSysDateTime( void )
+const char*  CMysqlConnection::GetSysDateTime()
 {
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
 	MYSNPRINTF(m_szDateTime,
 		sizeof(m_szDateTime)-1,
 		"SELECT NOW()");
 
-	IRecordSet *pRescordSet = ExecuteQuery(m_szDateTime);
+	auto pRescordSet = ExecuteQuery(m_szDateTime);
 	if ( !pRescordSet )
 	{
-		ErrorHandle();
+		errorHandle();
 		return false;
 	}
 
@@ -510,8 +465,8 @@ const char*  CMysqlConnection::GetSysDateTime( void )
 	if ( !pRescordSet->GetValue( 1, m_szDateTime, sizeof(m_szDateTime), &iFactLen ) )
 	{
 		ReleaseRecordSet(&pRescordSet);
-		ErrorHandle();
-		return NULL;
+		errorHandle();
+		return nullptr;
 	}
 
 	ReleaseRecordSet(&pRescordSet);
@@ -520,18 +475,18 @@ const char*  CMysqlConnection::GetSysDateTime( void )
 }
 
 // 关闭连接
-void  CMysqlConnection::DisconnectDB( void )
+void  CMysqlConnection::disconnectDB()
 {
-	if ( m_pMysqlConn )
+	if ( pMysqlConn_ )
 	{
-		mysql_close(m_pMysqlConn);
-		m_pMysqlConn = NULL;
+		mysql_close(pMysqlConn_);
+		pMysqlConn_ = nullptr;
 	}
 
 }
 
 // 是否重连
-bool CMysqlConnection::IsReconnect( void )
+bool CMysqlConnection::isReconnect()
 {
 	// 若为网络连接错误则重连
 	if ( GetErrorCode() == RETCODE_NETWORK_FAIL_CONNECT )
@@ -541,41 +496,41 @@ bool CMysqlConnection::IsReconnect( void )
 }
 
 // 重新连接（由内部保证重连）
-bool CMysqlConnection::ReconnectDB( void )
+bool CMysqlConnection::reconnectDB()
 {
-	MYDB_PRINT("TRY RECONNECT DB( %s )... \n", m_strDB.c_str());
-	DisconnectDB();
+	MYDB_PRINT("TRY RECONNECT DB( %s )... \n", strDB_.c_str());
+	disconnectDB();
 	return ConnectDB();
 }
 
-void CMysqlConnection::ErrorHandle( void )
+void CMysqlConnection::errorHandle()
 {
 	// 错误信息打印
-	ErrorPrint();
+	errorPrint();
 
 	// 重连
-	if ( IsReconnect() )
-		ReconnectDB();
+	if ( isReconnect() )
+		reconnectDB();
 }
 
 // 错误信息打印
-void  CMysqlConnection::ErrorPrint( void )
+void  CMysqlConnection::errorPrint()
 {   
-	MY_ASSERT_RET( NULL != m_pMysqlConn );
+	MY_ASSERT_RET( nullptr != pMysqlConn_ );
 
 	MYDB_PRINT( "MYSQL ERROR :\n"
 		"CODE : %d\n"
 		"MSG  : %s\n",
-		mysql_errno(m_pMysqlConn),
-		mysql_error(m_pMysqlConn)
+		mysql_errno(pMysqlConn_),
+		mysql_error(pMysqlConn_)
 		);
 }
 
 // 测试连接状态
-bool CMysqlConnection::TestConnectAlive( void )
+bool CMysqlConnection::testConnectAlive()
 {
-	if( !m_pMysqlConn)
-		if ( !ReconnectDB() )
+	if( !pMysqlConn_)
+		if ( !reconnectDB() )
 			return false;
 
 	return true;

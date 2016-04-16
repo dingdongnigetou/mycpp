@@ -115,7 +115,7 @@
 
 	#define CALLBACK 
 
-#define INVALID_HANDLE_VALUE NULL
+#define INVALID_HANDLE_VALUE nullptr
 
 #if defined(__LP64__)
 
@@ -184,15 +184,6 @@
 
 
 typedef UInt8 Byte;
-
-#ifndef BOOL
-#define BOOL int
-#endif
-
-#ifndef TRUE
-# define TRUE 0x1
-# define FALSE 0
-#endif
 
 #endif // MYCPP_COMMON_MYTYPES_H
 

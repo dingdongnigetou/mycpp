@@ -9,3 +9,5 @@ DBAccess/bin
 *.sdf
 *.suo
 *.user
+
+mycpp.VC.opendb

@@ -11,20 +11,13 @@ CAdoConnection::CAdoConnection( const std::string& strHost,
 							   const std::string& strUserName,
 							   const std::string& strPassword,
 							   UInt16 iPort )
-:strUser_(strUserName)
-,strPwd_(strPassword)
-,pConn_(NULL)
-,pErr_(NULL)
 {
-	if ( iPort == 0 )
-		iPort = 1433;    // sqlserver默认端口 
-
 	pErr_ = new char[ERROR_STR_SIZE];
-	clearError();
+	ClearError();
 
 	char buf[512];
 	sprintf_s(buf,"Provider=SQLOLEDB.1;Password=%s;    \
-		Persist Security Info=True;User ID=%s;Initial Catalog=%s; \
+		Persist Security Info=true;User ID=%s;Initial Catalog=%s; \
 		Data Source=%s",strPassword.c_str(),strUserName.c_str(),strDataBase.c_str(),strHost.c_str());
 
 	strDB_ = std::string(buf);
@@ -34,9 +27,9 @@ CAdoConnection::CAdoConnection( const std::string& strHost,
 	pConn_.CreateInstance("ADODB.Connection");
 }
 
-CAdoConnection::~CAdoConnection(void)
+CAdoConnection::~CAdoConnection()
 {
-	if (pConn_ != NULL)
+	if (pConn_ != nullptr)
 	{
 		if (isOpen())
 		{
@@ -44,13 +37,13 @@ CAdoConnection::~CAdoConnection(void)
 		}
 
 		pConn_.Release();
-		pConn_ = NULL;
+		pConn_ = nullptr;
 	}
 
-	if (pErr_ != NULL)
+	if (pErr_ != nullptr)
 	{
 		delete pErr_;
-		pErr_ = NULL;
+		pErr_ = nullptr;
 	}
 }
 
@@ -68,7 +61,7 @@ bool CAdoConnection::ConnectDB( )
 
 		return true;
 	}
-	catch (_com_error& e)
+	catch (...)
 	{
 		errorHandle();
 		return false;
@@ -101,7 +94,7 @@ bool CAdoConnection::isOpen()
 {
 	try
 	{
-		return (pConn_ != NULL && (pConn_->State & adStateOpen));
+		return (pConn_ != nullptr && (pConn_->State & adStateOpen));
 	}
 	catch (_com_error e)
 	{
@@ -118,18 +111,20 @@ void CAdoConnection::ReleaseRecordSet( IRecordSet** pcsRecordSet )
 	if ( *pcsRecordSet )
 	{
 		delete *pcsRecordSet;
-		*pcsRecordSet = NULL;
+		*pcsRecordSet = nullptr;
 	}
 }
 
 IRecordSet* CAdoConnection::PrepareBind( const char* szSql )
 {
-	DB_POINTER_CHECK_RET(szSql, NULL);
+	DB_POINTER_CHECK_RET(szSql, nullptr);
+	return nullptr;
 }
 
 bool CAdoConnection::ExecuteBind( IRecordSet* pcsRecordSet )
 {
 	DB_POINTER_CHECK_RET(pcsRecordSet, false);
+	return true;
 }
 
 bool CAdoConnection::ExecuteSql( const char* szSql )
@@ -142,9 +137,9 @@ bool CAdoConnection::ExecuteSql( const char* szSql )
 	{
 		if (isOpen())
 		{
-			if (pConn_->Execute(_bstr_t(szSql), NULL, adCmdText) != NULL)
+			if (pConn_->Execute(_bstr_t(szSql), nullptr, adCmdText) != nullptr)
 			{
-				clearError();
+				ClearError();
 				return	true;
 			}
 			else
@@ -177,21 +172,21 @@ bool CAdoConnection::GetLastInsertID(const char* szSeqName, signed __int64& lRow
 
 IRecordSet* CAdoConnection::ExecuteQuery( const char* szSql )
 {
-	DB_POINTER_CHECK_RET(szSql, NULL);
+	DB_POINTER_CHECK_RET(szSql, nullptr);
 	if ( !testConnectAlive() )
-		return NULL;
+		return nullptr;
 
 	auto res = new CAdoRecordSet(szSql, this);
 
 	if (res->IsOpen())
 	{
-		clearError();
+		ClearError();
 	}
 	else
 	{
 		errorHandle();
 		delete res;
-		res = NULL;
+		res = nullptr;
 	}
 
 	return res;
@@ -199,8 +194,7 @@ IRecordSet* CAdoConnection::ExecuteQuery( const char* szSql )
 
 IRecordSet* CAdoConnection::ExecutePageQuery( const char* szSql, int iStartRow, int iRowNum )
 {
-	DB_POINTER_CHECK_RET(szSql, NULL);
-	//DB_POINTER_CHECK_RET(pConn_, NULL);
+	DB_POINTER_CHECK_RET(szSql, nullptr);
 	if ( !testConnectAlive() )
 		return false;
 
@@ -220,7 +214,7 @@ bool CAdoConnection::BeginTrans()
 	try
 	{
 		 pConn_->BeginTrans();
-		 clearError();
+		 ClearError();
 		 return true;
 	}
 	catch (_com_error e)
@@ -250,9 +244,8 @@ void CAdoConnection::Rollback()
 
 }
 
-bool CAdoConnection::Commit( void )
+bool CAdoConnection::Commit()
 {
-	//DB_POINTER_CHECK_RET(pConn_, false);
 	if ( !pConn_ )
 		return false;
 
@@ -260,7 +253,7 @@ bool CAdoConnection::Commit( void )
 	{
 		if (SUCCEEDED(pConn_->CommitTrans()))
 		{
-			clearError();
+			ClearError();
 			return	true;
 		}		
 		else
@@ -285,7 +278,7 @@ EnumDBApiRet CAdoConnection::GetErrorCode()
 	return RETCODE_UNKNOWN_ERROR;
 }
 
-const char* CAdoConnection::GetErrorMessage( void )
+const char* CAdoConnection::GetErrorMessage()
 {
 	if (std::string(pErr_).empty())
 		return "no error.";
@@ -293,78 +286,77 @@ const char* CAdoConnection::GetErrorMessage( void )
 	return pErr_;
 }
 
-const char* CAdoConnection::ToTime( const char* szDateTime )
+const char* CAdoConnection::ToTime(const char* szDateTime)
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
 	return szDateTime_;
 
 }
 
-const char* CAdoConnection::ToDate( const char* szDateTime )
+const char* CAdoConnection::ToDate(const char* szDateTime)
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
-		return szDateTime_;
+	return szDateTime_;
 
 }
 
-const char* CAdoConnection::ToDateTime( const char* szDateTime )
+const char* CAdoConnection::ToDateTime(const char* szDateTime)
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
-
-		return szDateTime_;
+	return szDateTime_;
 }
 
-const char* CAdoConnection::TimeToStr( const char* szDateTime )
+const char* CAdoConnection::TimeToStr(const char* szDateTime)
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
-		return szDateTime_;
+	return szDateTime_;
 
 }
 
-const char* CAdoConnection::DateToStr( const char* szDateTime )
+const char* CAdoConnection::DateToStr(const char* szDateTime)
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
-		return szDateTime_;
+	return szDateTime_;
 
 }
 
 const char* CAdoConnection::DateTimeToStr(const char* szDateTime)
 {
-	DB_POINTER_CHECK_RET(szDateTime, NULL);
+	DB_POINTER_CHECK_RET(szDateTime, nullptr);
 
-		return szDateTime_;
-}
-
-const char* CAdoConnection::GetSysTime( void )
-{
-		return szDateTime_;
-}
-
-const char* CAdoConnection::GetSysDate( void )
-{
-		return szDateTime_;
-}
-
-const char* CAdoConnection::GetSysDateTime( void )
-{   
 	return szDateTime_;
 }
 
-bool CAdoConnection::isReconnect( )
+const char* CAdoConnection::GetSysTime()
+{
+	return szDateTime_;
+}
+
+const char* CAdoConnection::GetSysDate()
+{
+	return szDateTime_;
+}
+
+const char* CAdoConnection::GetSysDateTime()
+{
+	return szDateTime_;
+}
+
+bool CAdoConnection::isReconnect()
 {
 	// 若为网络连接错误则重连
-	if ( GetErrorCode() == RETCODE_NETWORK_FAIL_CONNECT )
+	if (GetErrorCode() == RETCODE_NETWORK_FAIL_CONNECT)
 		return true;
 
 	return false;
 }
 
-bool CAdoConnection::reconnectDB( )
+bool CAdoConnection::reconnectDB()
 {
 	MYDB_PRINT("TRY RECONNECT DB( %s )... \n", strDB_.c_str());
 	close();
@@ -378,15 +370,15 @@ void CAdoConnection::errorHandle()
 
 void CAdoConnection::SetLastError()
 {
-	clearError();
+	ClearError();
 	ErrorPtr p = pConn_->Errors->GetItem(pConn_->Errors->GetCount() - 1);
-	sprintf_s(pErr_, ERROR_STR_SIZE, "%s", (char*)p->Description +'\0');
+	sprintf_s(pErr_, ERROR_STR_SIZE, "%s", (char*)p->Description + '\0');
 }
 
-bool CAdoConnection::testConnectAlive( void )
+bool CAdoConnection::testConnectAlive()
 {
-	if ( !isOpen())
-		if ( !reconnectDB() )
+	if (!isOpen())
+		if (!reconnectDB())
 			return false;
 
 	return true;
@@ -397,7 +389,8 @@ _ConnectionPtr& CAdoConnection::GetRawConnRef()
 	return pConn_;
 }
 
-void CAdoConnection::clearError()
+void CAdoConnection::ClearError()
 {
 	memset(pErr_, 0x0, ERROR_STR_SIZE);
 }
+

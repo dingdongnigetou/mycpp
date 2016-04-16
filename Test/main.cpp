@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-#include "DBAccessApi.h"
+#include "../DBAccess/common/DBAccessApi.h"
 
 #ifdef _DEBUG
 #pragma comment(lib,"../DBAccess/bin/Debug/DBAccessD.lib")

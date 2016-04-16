@@ -10,7 +10,7 @@ namespace mycpp
 		tm date_;// 日期
 		time_t seconds_;// 自1970起的秒数
 	public:
-		explicit DateTime::DateTime(void) : DateTime(time(0)) {}
+		explicit DateTime::DateTime() : DateTime(time(0)) {}
 		DateTime::DateTime(time_t seconds) : seconds_(seconds)
 		{
 			localtime_s(&this->date_, &this->seconds_);
@@ -43,15 +43,15 @@ namespace mycpp
 		}
 	public:
 		// 获取时间戳
-		time_t GetTimestamp(void) const { return seconds_; }
+		time_t GetTimestamp() const { return seconds_; }
 
 		// 获取时间
-		int GetYear(void) const { return date_.tm_year + 1900; }
-		int GetMonth(void) const { return date_.tm_mon + 1; }
-		int GetDay(void) const { return date_.tm_mday; }
-		int GetHour(void) const { return date_.tm_hour; }
-		int GetMinute(void) const { return date_.tm_min; }
-		int GetSecond(void) const { return date_.tm_sec; }
+		int GetYear() const { return date_.tm_year + 1900; }
+		int GetMonth() const { return date_.tm_mon + 1; }
+		int GetDay() const { return date_.tm_mday; }
+		int GetHour() const { return date_.tm_hour; }
+		int GetMinute() const { return date_.tm_min; }
+		int GetSecond() const { return date_.tm_sec; }
 
 		// 添加时间
 		void DateTime::AddYears(int years)
@@ -117,38 +117,38 @@ namespace mycpp
 		bool IsPM() const { return date_.tm_hour >= 12; }
 
 		//  获取此实例所表示的一年里面的第几天,从1月1日起,0-365
-		int DayOfYear(void) const { return date_.tm_yday; }
+		int DayOfYear() const { return date_.tm_yday; }
 		// 获取此实例所表示的日期是几号
-		int DayOfMonth(void) const { return date_.tm_mday; }
+		int DayOfMonth() const { return date_.tm_mday; }
 		// 获取此实例所表示的日期是星期几
-		int DayOfWeek(void) const { return date_.tm_wday; }
+		int DayOfWeek() const { return date_.tm_wday; }
 
 		// 将当前 DateTime 对象的值转换为其等效的短日期字符串表示形式
 		// "%Y-%m-%d %H:%M:%S" %Y=年 %m=月 %d=日 %H=时 %M=分 %S=秒
 		// %Y-%m-%d
-		tstring ToYmdString(void) const { return ToString(_T("%Y-%m-%d")); }
-		std::string ToYmdStringA(void) const { return ToStringA("%Y-%m-%d"); }
-		std::wstring ToYmdStringW(void) const { return ToStringW(L"%Y-%m-%d"); }
+		tstring ToYmdString() const { return ToString(_T("%Y-%m-%d")); }
+		std::string ToYmdStringA() const { return ToStringA("%Y-%m-%d"); }
+		std::wstring ToYmdStringW() const { return ToStringW(L"%Y-%m-%d"); }
 		// %H:%M:%S
-		tstring ToHmsString(void) const { return ToString(_T("%H:%M:%S")); }
-		std::string ToHmsStringA(void) const { return ToStringA("%H:%M:%S"); }
-		std::wstring ToHmsStringW(void) const { return ToStringW(L"%H:%M:%S"); }
+		tstring ToHmsString() const { return ToString(_T("%H:%M:%S")); }
+		std::string ToHmsStringA() const { return ToStringA("%H:%M:%S"); }
+		std::wstring ToHmsStringW() const { return ToStringW(L"%H:%M:%S"); }
 
-		tstring ToYmdString2(void) const { return ToString(_T("%Y%m%d")); }
-		std::string ToYmdStringA2(void) const { return ToStringA("%Y%m%d"); }
-		std::wstring ToYmdStringW2(void) const { return ToStringW(L"%Y%m%d"); }
+		tstring ToYmdString2() const { return ToString(_T("%Y%m%d")); }
+		std::string ToYmdStringA2() const { return ToStringA("%Y%m%d"); }
+		std::wstring ToYmdStringW2() const { return ToStringW(L"%Y%m%d"); }
 
-		tstring ToHmsString2(void) const { return ToString(_T("%H%M%S")); }
-		std::string ToHmsStringA2(void) const { return ToStringA("%H%M%S"); }
-		std::wstring ToHmsStringW2(void) const { return ToStringW(L"%H%M%S"); }
+		tstring ToHmsString2() const { return ToString(_T("%H%M%S")); }
+		std::string ToHmsStringA2() const { return ToStringA("%H%M%S"); }
+		std::wstring ToHmsStringW2() const { return ToStringW(L"%H%M%S"); }
 
-		tstring ToString(void) const { return ToString(_T("%Y-%m-%d %H:%M:%S")); }
-		std::string ToStringA(void) const { return ToStringA("%Y-%m-%d %H:%M:%S"); }
-		std::wstring ToStringW(void) const { return ToStringW(L"%Y-%m-%d %H:%M:%S"); }
+		tstring ToString() const { return ToString(_T("%Y-%m-%d %H:%M:%S")); }
+		std::string ToStringA() const { return ToStringA("%Y-%m-%d %H:%M:%S"); }
+		std::wstring ToStringW() const { return ToStringW(L"%Y-%m-%d %H:%M:%S"); }
 
-		tstring ToString2(void) const { return ToString(_T("%Y%m%d%H%M%S")); }
-		std::string ToStringA2(void) const { return ToStringA("%Y%m%d%H%M%S"); }
-		std::wstring ToStringW2(void) const { return ToStringW(L"%Y%m%d%H%M%S"); }
+		tstring ToString2() const { return ToString(_T("%Y%m%d%H%M%S")); }
+		std::string ToStringA2() const { return ToStringA("%Y%m%d%H%M%S"); }
+		std::wstring ToStringW2() const { return ToStringW(L"%Y%m%d%H%M%S"); }
 
 		
 		tstring DateTime::ToString(const tstring& strFormat) const
@@ -254,7 +254,7 @@ namespace mycpp
 		}
 
 		// 返回当前日期
-		static DateTime Now(void) { return std::move(DateTime(time(0))); }
+		static DateTime Now() { return std::move(DateTime(time(0))); }
 
 		// 是否相同日期
 		static bool IsSameDay(time_t lhs, time_t rhs) { return IsSameDay(DateTime(lhs), DateTime(rhs)); }

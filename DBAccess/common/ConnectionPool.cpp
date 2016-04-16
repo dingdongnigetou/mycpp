@@ -4,34 +4,34 @@
 #include "MysqlConnection.h"
 #include "AdoConnection.h"
 
-#define SET_ERROR_CODE(err) (m_eError = err)
-#define GET_ERROR_CODE(perr) if ( perr ) {*perr = m_eError;}
+#define SET_ERROR_CODE(err) (eError_ = err)
+#define GET_ERROR_CODE(perr) if ( perr ) {*perr = eError_;}
 
 using namespace mycpp;
 
 CConnectionPool::CConnectionPool( EnumDriverType eType )
-:m_eType(eType)
-,m_strHost("")
-,m_strDataBase("")
-,m_strUserName("")
-,m_strPassword("")
-,m_iPort(0)
-,m_iMinConns(0)
-,m_iMaxConns(0)
-,m_iUsedConns(0)
-,m_eError(RETCODE_SUCCESS)
+:eType_(eType)
+,strHost_("")
+,strDataBase_("")
+,strUserName_("")
+,strPassword_("")
+,iPort_(0)
+,iMinConns_(0)
+,iMaxConns_(0)
+,iUsedConns_(0)
+,eError_(RETCODE_SUCCESS)
 {
 
 }
 
-CConnectionPool::~CConnectionPool( void )
+CConnectionPool::~CConnectionPool()
 {
-	ClearList();
+	clearList();
 }
 
 EnumDriverType CConnectionPool::GetDriverType()
 {
-	return m_eType;
+	return eType_;
 }
 
 void CConnectionPool::SetParams( const char* szHost,
@@ -42,10 +42,10 @@ void CConnectionPool::SetParams( const char* szHost,
 								  unsigned int iMinConns,
 								  unsigned int iMaxConns )
 {
-	//MYASSERT(szHost!=NULL);  //本地数据库可以为NULL
-	MYASSERT(szDataBase!=NULL);
-	MYASSERT(szUserName!=NULL);
-	//MYASSERT(szPassword!=NULL); // 密码可以为NULL
+	//MYASSERT(szHost!=nullptr);  //本地数据库可以为nullptr
+	MYASSERT(szDataBase!=nullptr);
+	MYASSERT(szUserName!=nullptr);
+	//MYASSERT(szPassword!=nullptr); // 密码可以为nullptr
 	MYASSERT(iMinConns>0&&iMinConns<=iMaxConns);
 	MYASSERT(iMinConns<=iMaxConns&&iMaxConns<=50);
 
@@ -53,50 +53,50 @@ void CConnectionPool::SetParams( const char* szHost,
 		|| (iMinConns<0||iMinConns>iMaxConns)
 		|| (iMaxConns<iMinConns||iMaxConns>50) )
 	{
-		MYWARNV(!m_strDataBase.empty(),"db name is null!");
-		MYWARNV(!m_strUserName.empty(), "user name is null!");
+		MYWARNV(!strDataBase_.empty(),"db name is nullptr!");
+		MYWARNV(!strUserName_.empty(), "user name is nullptr!");
 		MYWARNV(iMinConns>0&&iMinConns<=iMaxConns, "min connections illegal");
 		MYWARNV(iMinConns<=iMaxConns&&iMaxConns<=50, "max connections illegal");
 		SET_ERROR_CODE(RETCODE_PARAMS_ERROR);
 		return ;
 	}
 	
-	if ( szHost ) m_strHost  = std::string(szHost);
-	if ( szPassword ) m_strPassword = std::string(szPassword);
+	if ( szHost ) strHost_  = std::string(szHost);
+	if ( szPassword ) strPassword_ = std::string(szPassword);
 
-	m_strDataBase = std::string(szDataBase);
-	m_strUserName = std::string(szUserName);
+	strDataBase_ = std::string(szDataBase);
+	strUserName_ = std::string(szUserName);
 
-	m_iPort     = iPort;
-	m_iMinConns = iMinConns;
-	m_iMaxConns = iMaxConns;
+	iPort_     = iPort;
+	iMinConns_ = iMinConns;
+	iMaxConns_ = iMaxConns;
 }
 
 IConnection* CConnectionPool::GetConnection( EnumDBApiRet* eError )
 {
-	IConnection *pConn = NULL;
-	BOOL bRet = FALSE;
+	IConnection *pConn = nullptr;
+	bool bRet = false;
 
-	MYASSERT(bRet=IsNoError());
+	MYASSERT(bRet=isNoError());
 	if ( !bRet )
 	{
 		GET_ERROR_CODE(eError);
 		return pConn;
 	}
 
-	MYASSERT(bRet=InitList());
+	MYASSERT(bRet=initList());
 	if ( !bRet )
 	{
 		GET_ERROR_CODE(eError);
 		return pConn;
 	}
 
-	pConn = GetIdle();
+	pConn = getIdle();
 	if ( !pConn )
 	{
-		if ( !IsOverMaxLink() )
+		if ( !isOverMaxLink() )
 		{
-			pConn = CreateConnection();
+			pConn = createConnection();
 		}
 		else
 		{
@@ -115,88 +115,88 @@ IConnection* CConnectionPool::GetConnection( EnumDBApiRet* eError )
 
 void CConnectionPool::ReleaseConnection( IConnection** pcsConn )
 {
-	MYASSERT(*pcsConn!=NULL);
+	MYASSERT(*pcsConn!=nullptr);
 
-	if ( !IsListItem(*pcsConn) )
-		DestroyConnection(*pcsConn);
+	if ( !isListItem(*pcsConn) )
+		destroyConnection(*pcsConn);
 	else
-		SetIdle(*pcsConn);
+		setIdle(*pcsConn);
 
-	*pcsConn = NULL;
+	*pcsConn = nullptr;
 }
 
-BOOL CConnectionPool::IsNoError( void )
+bool CConnectionPool::isNoError()
 {
-	return (m_eError==RETCODE_SUCCESS)?TRUE:FALSE;
+	return (eError_==RETCODE_SUCCESS)?true:false;
 }
 
-IConnection* CConnectionPool::CreateConnection( void )
+IConnection* CConnectionPool::createConnection()
 {
-	IConnection* pcsConn = NULL;
+	IConnection* pcsConn = nullptr;
 
-	switch ( m_eType )
+	switch ( eType_ )
 	{
 	case ODBC:
 		MYWARNV(0, "Not support ODBC driver type!");
 		break;
 	case OCI:
 		{
-			COciConnection *p = new COciConnection(m_strHost,
-				m_strDataBase,
-				m_strUserName,
-				m_strPassword,
-				m_iPort);
+			COciConnection *p = new COciConnection(strHost_,
+				strDataBase_,
+				strUserName_,
+				strPassword_,
+				iPort_);
 			if ( !p->ConnectDB() )
 			{
 				SET_ERROR_CODE(p->GetErrorCode());
 				delete p;
-				p = NULL;
+				p = nullptr;
 			}
 
 			pcsConn = p;
 			
-			m_iUsedConns ++;
+			iUsedConns_ ++;
 		}
 		break;
 	case MYSQL_API:
 		{
-			CMysqlConnection *p = new CMysqlConnection(m_strHost,
-				m_strDataBase,
-				m_strUserName,
-				m_strPassword,
-				m_iPort);
+			CMysqlConnection *p = new CMysqlConnection(strHost_,
+				strDataBase_,
+				strUserName_,
+				strPassword_,
+				iPort_);
 			if ( !p->ConnectDB() )
 			{
 				SET_ERROR_CODE(p->GetErrorCode());
 				delete p;
-				p = NULL;
+				p = nullptr;
 			}
 
 			pcsConn = p;
 
-			m_iUsedConns ++;
+			iUsedConns_ ++;
 		}
 	case ADO:
        {
-			CAdoConnection *p = new CAdoConnection(m_strHost,
-				m_strDataBase,
-				m_strUserName,
-				m_strPassword,
-				m_iPort);
+			CAdoConnection *p = new CAdoConnection(strHost_,
+				strDataBase_,
+				strUserName_,
+				strPassword_,
+				iPort_);
 			if ( !p->ConnectDB() )
 			{
 				SET_ERROR_CODE(p->GetErrorCode());
 				delete p;
-				p = NULL;
+				p = nullptr;
 			}
 
 			pcsConn = p;
 
-			m_iUsedConns ++;
+			iUsedConns_ ++;
        }
 		break;
 	default:
-		MYASSERTV( (m_eType!=ODBC&&m_eType!=OCI&&m_eType!=MYSQL_API&&m_eType!=ADO), m_eType );
+		MYASSERTV( (eType_!=ODBC&&eType_!=OCI&&eType_!=MYSQL_API&&eType_!=ADO), eType_ );
 		SET_ERROR_CODE(RETCODE_PARAMS_ERROR);
 		break;
 	}
@@ -204,143 +204,143 @@ IConnection* CConnectionPool::CreateConnection( void )
 	return pcsConn;
 }
 
-void CConnectionPool::DestroyConnection( IConnection* pcsConn )
+void CConnectionPool::destroyConnection( IConnection* pcsConn )
 {
-	MYASSERT(pcsConn!=NULL);
+	MYASSERT(pcsConn!=nullptr);
 	if ( pcsConn )
 		delete pcsConn;
 
-	m_iUsedConns--;
+	iUsedConns_--;
 }
 
-BOOL CConnectionPool::InitList( void )
+bool CConnectionPool::initList()
 {
-	MyAutoMutex csAuto(m_csMutexInit);
+	MyAutoMutex csAuto(csMutexInit_);
 
-	if ( !IsListEmpty() )
-		return TRUE;
+	if ( !isListEmpty() )
+		return true;
 
 	// 创建连接
-	for ( UInt32 i=0; i<m_iMinConns; i++ )
+	for ( UInt32 i=0; i<iMinConns_; i++ )
 	{
-		IConnection *p = CreateConnection();
+		auto p = createConnection();
 		if ( !p )
 		{
-			ClearList();
-			return FALSE;
+			clearList();
+			return false;
 		}
-		AddList(p);
+		addList(p);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
-void CConnectionPool::AddList( IConnection* pcsConn )
+void CConnectionPool::addList( IConnection* pcsConn )
 {
-	BOOL bRet = FALSE;
-	MYASSERT(!(bRet=IsListItem(pcsConn)));
+	bool bRet = false;
+	MYASSERT(!(bRet=isListItem(pcsConn)));
 
 	if ( !bRet )
 	{
 		// 加自动锁
-		MyAutoMutex csAuto(m_csMutex);
+		MyAutoMutex csAuto(csMutex_);
 		StruConnInfo stInfo;
-		stInfo.bIdle = TRUE;
+		stInfo.bIdle = true;
 		stInfo.pConn = pcsConn;
-		m_vecConnectionList.push_back(stInfo);
+		vecConnectionList_.push_back(stInfo);
 	}
 }
 
-void CConnectionPool::ClearList( void )
+void CConnectionPool::clearList()
 {
 	// 加自动锁
-	MyAutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(csMutex_);
 
-	for ( ConnectionList::iterator iter = m_vecConnectionList.begin();
-		iter != m_vecConnectionList.end();
+	for ( ConnectionList::iterator iter = vecConnectionList_.begin();
+		iter != vecConnectionList_.end();
 		 )
 	{
 		if ( !(*iter).bIdle )
 		{
 			// 解锁
-			m_csMutex.Unlock();
+			csMutex_.Unlock();
 			MYWARNV(0, "db connection is busy. please wait...");
 			Sleep(500);
 			// 加锁
-			m_csMutex.Lock();
+			csMutex_.Lock();
 		}
 		else
 		{
-			DestroyConnection((*iter).pConn);
+			destroyConnection((*iter).pConn);
 			iter ++;
 		}
 	}
 
-	m_vecConnectionList.clear();
+	vecConnectionList_.clear();
 }
 
-BOOL CConnectionPool::IsListItem( IConnection* pcsConn )
+bool CConnectionPool::isListItem( IConnection* pcsConn )
 {
 	// 加自动锁
-	MyAutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(csMutex_);
 
-	for ( ConnectionList::iterator iter = m_vecConnectionList.begin();
-		iter != m_vecConnectionList.end();
+	for ( ConnectionList::iterator iter = vecConnectionList_.begin();
+		iter != vecConnectionList_.end();
 		iter ++ )
 	{
 		if ( (*iter).pConn == pcsConn )
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
-IConnection* CConnectionPool::GetIdle( void )
+IConnection* CConnectionPool::getIdle()
 {
 	// 加自动锁
-	MyAutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(csMutex_);
 
-	for ( ConnectionList::iterator iter = m_vecConnectionList.begin();
-		iter != m_vecConnectionList.end();
+	for ( ConnectionList::iterator iter = vecConnectionList_.begin();
+		iter != vecConnectionList_.end();
 		iter ++ )
 	{
 		if ( (*iter).bIdle )
 		{
-			(*iter).bIdle = FALSE;
+			(*iter).bIdle = false;
 			return (*iter).pConn;
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
-void CConnectionPool::SetIdle( IConnection* pcsConn )
+void CConnectionPool::setIdle( IConnection* pcsConn )
 {
 	// 加自动锁
-	MyAutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(csMutex_);
 
-	for ( ConnectionList::iterator iter = m_vecConnectionList.begin();
-		iter != m_vecConnectionList.end();
+	for ( ConnectionList::iterator iter = vecConnectionList_.begin();
+		iter != vecConnectionList_.end();
 		iter ++ )
 	{
 		if ( (*iter).pConn == pcsConn )
 		{
-			(*iter).bIdle = TRUE;
+			(*iter).bIdle = true;
 			break;
 		}
 	}
 }
 
-BOOL CConnectionPool::IsListEmpty( void )
+bool CConnectionPool::isListEmpty()
 {
 	// 加自动锁
-	MyAutoMutex csAuto(m_csMutex);
+	MyAutoMutex csAuto(csMutex_);
 
-	return m_vecConnectionList.empty()?TRUE:FALSE;
+	return vecConnectionList_.empty()?true:false;
 }
 
-BOOL CConnectionPool::IsOverMaxLink( void )
+bool CConnectionPool::isOverMaxLink()
 {
-	return m_iUsedConns>=m_iMaxConns;
+	return iUsedConns_>=iMaxConns_;
 }

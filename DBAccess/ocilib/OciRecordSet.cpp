@@ -5,107 +5,93 @@
 #include "OciConnection.h"
 
 COciRecordSet::COciRecordSet( OCI_Statement *pStmt, COciConnection* pOciConn )
-:m_pStmt(pStmt)
-,m_pResultSet(NULL)
-,m_pOciConn(pOciConn)
-,m_bEof(false)
-,m_iBindRows(0)
+:pStmt_(pStmt)
+,pOciConn_(pOciConn)
 {
-	m_mapParamsList.clear();
-	m_mapDateList.clear();
-	m_mapLobList.clear();
-	m_mapDateArrayList.clear();
-	m_mapLobArrayList.clear();
+	mapParamsList_.clear();
+	mapDateList_.clear();
+	mapLobList_.clear();
+	mapDateArrayList_.clear();
+	mapLobArrayList_.clear();
 
-	m_pResultSet = OCI_GetResultset(m_pStmt);   // bind模式下结果集无效
-	if ( m_pResultSet )
+	pResultSet_ = OCI_GetResultset(pStmt_);   // bind模式下结果集无效
+	if ( pResultSet_ )
 		MoveNext(); // 需要先移到第一条记录
 }
 
-COciRecordSet::~COciRecordSet( void )
+COciRecordSet::~COciRecordSet()
 {
-	OCI_ReleaseResultsets(m_pStmt);
-	OCI_StatementFree(m_pStmt);
-	m_pStmt = NULL;
-	m_pResultSet = NULL;
+	OCI_ReleaseResultsets(pStmt_);
+	OCI_StatementFree(pStmt_);
+	pStmt_ = nullptr;
+	pResultSet_ = nullptr;
 
-
-	for (std::map<unsigned int, void*>::iterator iter = m_mapParamsList.begin();
-		iter != m_mapParamsList.end();
-		iter ++ )
+	for (auto m : mapParamsList_)
 	{
-		if ( (*iter).second )
-			delete [](*iter).second;
+		if (nullptr != m.second)
+			delete[] m.second;
 	}
-	m_mapParamsList.clear();
+	mapParamsList_.clear();
 
-	for (std::map<unsigned int, OCI_Date*>::iterator iter = m_mapDateList.begin();
-		iter != m_mapDateList.end();
-		iter ++ )
+	for (auto m : mapDateList_)
 	{
-		if ( (*iter).second )
-			OCI_DateFree((*iter).second);
+		if (nullptr != m.second)
+			OCI_DateFree(m.second);
 	}
-	m_mapDateList.clear();
+	mapDateList_.clear();
 
-	for (std::map<unsigned int, OCI_Lob*>::iterator iter = m_mapLobList.begin();
-		iter != m_mapLobList.end();
-		iter ++ )
+	for (auto m : mapLobList_)
 	{
-		if ( (*iter).second )
-			OCI_LobFree((*iter).second);
+		if (nullptr != m.second)
+			OCI_LobFree(m.second);
 	}
-	m_mapLobList.clear();
+	mapLobList_.clear();
 
-	for (std::map<unsigned int, OCI_Date**>::iterator iter = m_mapDateArrayList.begin();
-		iter != m_mapDateArrayList.end();
-		iter ++ )
+	for (auto m : mapDateArrayList_)
 	{
-		if ( *(*iter).second )
-			OCI_DateArrayFree((*iter).second);
+		if (nullptr != (*m.second))
+			OCI_DateArrayFree(m.second);
 	}
-	m_mapDateArrayList.clear();
+	mapDateArrayList_.clear();
 
-	for (std::map<unsigned int, OCI_Lob**>::iterator iter = m_mapLobArrayList.begin();
-		iter != m_mapLobArrayList.end();
-		iter ++ )
+	for (auto m : mapLobArrayList_)
 	{
-		if ( *(*iter).second )
-			OCI_LobArrayFree((*iter).second);
+		if (nullptr != (*m.second))
+			OCI_LobArrayFree(m.second);
 	}
-	m_mapLobArrayList.clear();
+	mapLobArrayList_.clear();
 }
 
-bool COciRecordSet::Eof( void )
+bool COciRecordSet::Eof()
 {
-	DB_POINTER_CHECK_RET(m_pStmt,false);
-	DB_POINTER_CHECK_RET(m_pResultSet,false);
+	DB_POINTER_CHECK_RET(pStmt_,false);
+	DB_POINTER_CHECK_RET(pResultSet_,false);
 
-	return m_bEof;
+	return bEof_;
 }
 
-// bool COciRecordSet::MoveLast( void )
+// bool COciRecordSet::MoveLast()
 // {
-// 	DB_POINTER_CHECK_RET(m_pStmt,false);
-// 	DB_POINTER_CHECK_RET(m_pResultSet,false);
+// 	DB_POINTER_CHECK_RET(pStmt_,false);
+// 	DB_POINTER_CHECK_RET(pResultSet_,false);
 // 
-// 	if ( !OCI_FetchLast(m_pResultSet) )
+// 	if ( !OCI_FetchLast(pResultSet_) )
 // 		return false;
 // 
 // 	return true;
 // }
 
-bool COciRecordSet::MoveNext( void )
+bool COciRecordSet::MoveNext()
 {
-	DB_POINTER_CHECK_RET(m_pStmt,false);
-	DB_POINTER_CHECK_RET(m_pResultSet,false);
+	DB_POINTER_CHECK_RET(pStmt_,false);
+	DB_POINTER_CHECK_RET(pResultSet_,false);
 
-	if ( !OCI_FetchNext(m_pResultSet) )
+	if ( !OCI_FetchNext(pResultSet_) )
 	{
 		if ( OCI_ErrorGetOCICode(OCI_GetLastError()) == OCI_ERR_NONE )
-			m_bEof = true;
+			bEof_ = true;
 		else
-			m_pOciConn->SetLastError();
+			pOciConn_->SetLastError();
 		return false;
 	}
 
@@ -128,8 +114,8 @@ bool COciRecordSet::GetValue( const char* szFieldName,
 							 unsigned int* iFactLen, 
 							 EnumDataType eType /* = DT_UNKNOWN */ )
 {
-	DB_POINTER_CHECK_RET(m_pStmt,false);
-	DB_POINTER_CHECK_RET(m_pResultSet,false);
+	DB_POINTER_CHECK_RET(pStmt_,false);
+	DB_POINTER_CHECK_RET(pResultSet_,false);
 	DB_POINTER_CHECK_RET(szFieldName,false);
 	DB_POINTER_CHECK_RET(pBuf,false);
 	if ( iBufSize == 0 )
@@ -138,9 +124,9 @@ bool COciRecordSet::GetValue( const char* szFieldName,
 		return false;
 	}
 
-	if ( OCI_GetColumn2(m_pResultSet,szFieldName) == NULL )  // 判断是否存在
+	if ( OCI_GetColumn2(pResultSet_,szFieldName) == nullptr )  // 判断是否存在
 	{
-		m_pOciConn->SetLastError();
+		pOciConn_->SetLastError();
 		return false;
 	}
 
@@ -150,7 +136,7 @@ bool COciRecordSet::GetValue( const char* szFieldName,
 	{
 	case DT_NUMBER:
 		{
-			EnumDataType eDataType = GetDataType(OCI_GetColumnIndex(m_pResultSet,szFieldName), iBufSize);
+			auto eDataType = getDataType(OCI_GetColumnIndex(pResultSet_,szFieldName), iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -162,56 +148,55 @@ bool COciRecordSet::GetValue( const char* szFieldName,
 	case DT_INT8:
 		iValLen = sizeof(Int8);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int8*)pBuf = (Int8)OCI_GetShort2(m_pResultSet, szFieldName);
+		*(Int8*)pBuf = (Int8)OCI_GetShort2(pResultSet_, szFieldName);
 		break;
 	case DT_UINT8:
 		iValLen = sizeof(UInt8);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt8*)pBuf = (UInt8)OCI_GetUnsignedShort2(m_pResultSet, szFieldName);
+		*(UInt8*)pBuf = (UInt8)OCI_GetUnsignedShort2(pResultSet_, szFieldName);
 		break;
 	case DT_INT16:
 		iValLen = sizeof(Int16);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int16*)pBuf = OCI_GetShort2(m_pResultSet, szFieldName);
+		*(Int16*)pBuf = OCI_GetShort2(pResultSet_, szFieldName);
 		break;
 	case DT_UINT16:
 		iValLen = sizeof(UInt16);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt16*)pBuf = OCI_GetUnsignedShort2(m_pResultSet, szFieldName);
+		*(UInt16*)pBuf = OCI_GetUnsignedShort2(pResultSet_, szFieldName);
 		break;
 	case DT_INT32:
 		iValLen = sizeof(Int32);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int32*)pBuf = OCI_GetInt2(m_pResultSet, szFieldName);
+		*(Int32*)pBuf = OCI_GetInt2(pResultSet_, szFieldName);
 		break;
 	case DT_UINT32:
 		iValLen = sizeof(UInt32);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt32*)pBuf = OCI_GetUnsignedInt2(m_pResultSet, szFieldName);
+		*(UInt32*)pBuf = OCI_GetUnsignedInt2(pResultSet_, szFieldName);
 		break;
 	case DT_INT64:
 		iValLen = sizeof(Int64);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int64*)pBuf = OCI_GetBigInt2(m_pResultSet, szFieldName);
+		*(Int64*)pBuf = OCI_GetBigInt2(pResultSet_, szFieldName);
 		break;
 	case DT_UINT64:
 		iValLen = sizeof(UInt64);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt64*)pBuf = OCI_GetUnsignedBigInt2(m_pResultSet, szFieldName);
+		*(UInt64*)pBuf = OCI_GetUnsignedBigInt2(pResultSet_, szFieldName);
 		break;
 	case DT_TIME:
 		{
-			OCI_Column *pColumn = OCI_GetColumn2(m_pResultSet, szFieldName);
+			auto pColumn = OCI_GetColumn2(pResultSet_, szFieldName);
 			if ( !pColumn )
 			{
-				MYASSERT(pColumn!=NULL);
+				MYASSERT(pColumn!=nullptr);
 				return false;
 			}
 
-			//iValLen = OCI_ColumnGetSize(pColumn);
 			if ( OCI_ColumnGetSize(pColumn) > 0 )
 			{
-				OCI_Date *pDate = OCI_GetDate2(m_pResultSet, szFieldName);
+				auto pDate = OCI_GetDate2(pResultSet_, szFieldName);
 				if ( pDate )
 				{
 					if ( !OCI_DateToText(pDate,
@@ -228,24 +213,23 @@ bool COciRecordSet::GetValue( const char* szFieldName,
 	case DT_FLOAT:
 		iValLen = sizeof(float);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(float*)pBuf = OCI_GetFloat2(m_pResultSet, szFieldName);
+		*(float*)pBuf = OCI_GetFloat2(pResultSet_, szFieldName);
 		break;
 	case DT_DOUBLE:
 		iValLen = sizeof(double);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(double*)pBuf = OCI_GetDouble2(m_pResultSet, szFieldName);
+		*(double*)pBuf = OCI_GetDouble2(pResultSet_, szFieldName);
 		break;
 	case DT_STRING:
 		{
-			OCI_Column *pColumn = OCI_GetColumn2(m_pResultSet, szFieldName);
+			auto pColumn = OCI_GetColumn2(pResultSet_, szFieldName);
 			if ( !pColumn )
 			{
-				MYASSERT(pColumn!=NULL);
+				MYASSERT(pColumn!=nullptr);
 				return false;
 			}
 
-			//iValLen = OCI_ColumnGetSize(pColumn);
-			const char *czVal = OCI_GetString2(m_pResultSet, szFieldName);
+			auto czVal = OCI_GetString2(pResultSet_, szFieldName);
 			if ( OCI_ColumnGetSize(pColumn) > 0 && czVal)
 			{
 				iValLen = strlen(czVal);
@@ -263,19 +247,19 @@ bool COciRecordSet::GetValue( const char* szFieldName,
 		break;
 	case DT_CLOB:
 		{
-			if ( !GetLob(szFieldName, pBuf, iBufSize, &iValLen, true) )
+			if ( !getLob(szFieldName, pBuf, iBufSize, &iValLen, true) )
 				return false;
 		}
 		break;
 	case DT_BLOB:
 		{
-			if ( !GetLob(szFieldName, pBuf, iBufSize, &iValLen, false) )
+			if ( !getLob(szFieldName, pBuf, iBufSize, &iValLen, false) )
 				return false;
 		}
 		break;
 	default:
 		{
-			EnumDataType eDataType = GetDataType(OCI_GetColumnIndex(m_pResultSet,szFieldName), iBufSize);
+			auto eDataType = getDataType(OCI_GetColumnIndex(pResultSet_,szFieldName), iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -298,8 +282,8 @@ bool COciRecordSet::GetValue( unsigned int iColumn,
 							 unsigned int* iFactLen, 
 							 EnumDataType eType /* = DT_UNKNOWN */ )
 {
-	DB_POINTER_CHECK_RET(m_pStmt,false);
-	DB_POINTER_CHECK_RET(m_pResultSet,false);
+	DB_POINTER_CHECK_RET(pStmt_,false);
+	DB_POINTER_CHECK_RET(pResultSet_,false);
 	DB_POINTER_CHECK_RET(pBuf, false);
 
 	if ( iColumn < 1 
@@ -310,9 +294,9 @@ bool COciRecordSet::GetValue( unsigned int iColumn,
 		return false;
 	}
 
-	if ( OCI_GetColumn(m_pResultSet,iColumn) == NULL )  // 判断是否存在
+	if ( OCI_GetColumn(pResultSet_,iColumn) == nullptr )  // 判断是否存在
 	{
-		m_pOciConn->SetLastError();
+		pOciConn_->SetLastError();
 		return false;
 	}
 
@@ -322,7 +306,7 @@ bool COciRecordSet::GetValue( unsigned int iColumn,
 	{
 	case DT_NUMBER:
 		{
-			EnumDataType eDataType = GetDataType(iColumn, iBufSize);
+			auto eDataType = getDataType(iColumn, iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -334,56 +318,56 @@ bool COciRecordSet::GetValue( unsigned int iColumn,
 	case DT_INT8:
 		iValLen = sizeof(Int8);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int8*)pBuf = (Int8)OCI_GetShort(m_pResultSet, iColumn);
+		*(Int8*)pBuf = (Int8)OCI_GetShort(pResultSet_, iColumn);
 		break;
 	case DT_UINT8:
 		iValLen = sizeof(UInt8);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt8*)pBuf = (UInt8)OCI_GetUnsignedShort(m_pResultSet, iColumn);
+		*(UInt8*)pBuf = (UInt8)OCI_GetUnsignedShort(pResultSet_, iColumn);
 		break;
 	case DT_INT16:
 		iValLen = sizeof(Int16);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int16*)pBuf = OCI_GetShort(m_pResultSet, iColumn);
+		*(Int16*)pBuf = OCI_GetShort(pResultSet_, iColumn);
 		break;
 	case DT_UINT16:
 		iValLen = sizeof(UInt16);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt16*)pBuf = OCI_GetUnsignedShort(m_pResultSet, iColumn);
+		*(UInt16*)pBuf = OCI_GetUnsignedShort(pResultSet_, iColumn);
 		break;
 	case DT_INT32:
 		iValLen = sizeof(Int32);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int32*)pBuf = OCI_GetInt(m_pResultSet, iColumn);
+		*(Int32*)pBuf = OCI_GetInt(pResultSet_, iColumn);
 		break;
 	case DT_UINT32:
 		iValLen = sizeof(UInt32);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt32*)pBuf = OCI_GetUnsignedInt(m_pResultSet, iColumn);
+		*(UInt32*)pBuf = OCI_GetUnsignedInt(pResultSet_, iColumn);
 		break;
 	case DT_INT64:
 		iValLen = sizeof(Int64);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int64*)pBuf = OCI_GetBigInt(m_pResultSet, iColumn);
+		*(Int64*)pBuf = OCI_GetBigInt(pResultSet_, iColumn);
 		break;
 	case DT_UINT64:
 		iValLen = sizeof(UInt64);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt64*)pBuf = OCI_GetUnsignedBigInt(m_pResultSet, iColumn);
+		*(UInt64*)pBuf = OCI_GetUnsignedBigInt(pResultSet_, iColumn);
 		break;
 	case DT_TIME:
 		{
-			OCI_Column *pColumn = OCI_GetColumn(m_pResultSet, iColumn);
+			auto pColumn = OCI_GetColumn(pResultSet_, iColumn);
 			if ( !pColumn )
 			{
-				MYASSERT(pColumn!=NULL);
+				MYASSERT(pColumn!=nullptr);
 				return false;
 			}
 
 			//iValLen = OCI_ColumnGetSize(pColumn);
 			if ( OCI_ColumnGetSize(pColumn) > 0 )
 			{
-				OCI_Date *pDate = OCI_GetDate(m_pResultSet, iColumn);
+				auto pDate = OCI_GetDate(pResultSet_, iColumn);
 				if ( pDate )
 				{
 					if ( !OCI_DateToText(pDate,
@@ -400,24 +384,23 @@ bool COciRecordSet::GetValue( unsigned int iColumn,
 	case DT_FLOAT:
 		iValLen = sizeof(float);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(float*)pBuf = OCI_GetFloat(m_pResultSet, iColumn);
+		*(float*)pBuf = OCI_GetFloat(pResultSet_, iColumn);
 		break;
 	case DT_DOUBLE:
 		iValLen = sizeof(double);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(double*)pBuf = OCI_GetDouble(m_pResultSet, iColumn);
+		*(double*)pBuf = OCI_GetDouble(pResultSet_, iColumn);
 		break;
 	case DT_STRING:
 		{
-			OCI_Column *pColumn = OCI_GetColumn(m_pResultSet, iColumn);
+			auto pColumn = OCI_GetColumn(pResultSet_, iColumn);
 			if ( !pColumn )
 			{
-				MYASSERT(pColumn!=NULL);
+				MYASSERT(pColumn!=nullptr);
 				return false;
 			}
 	
-			//iValLen = OCI_ColumnGetSize(pColumn);
-			const char *czVal = OCI_GetString(m_pResultSet, iColumn);
+			auto czVal = OCI_GetString(pResultSet_, iColumn);
 			if ( OCI_ColumnGetSize(pColumn) > 0 && czVal)
 			{
 				iValLen = strlen(czVal);
@@ -435,19 +418,19 @@ bool COciRecordSet::GetValue( unsigned int iColumn,
 		break;
 	case DT_CLOB:
 		{
-			if ( !GetLob(iColumn, pBuf, iBufSize, &iValLen, true) )
+			if ( !getLob(iColumn, pBuf, iBufSize, &iValLen, true) )
 				return false;
 		}
 		break;
 	case DT_BLOB:
 		{
-			if ( !GetLob(iColumn, pBuf, iBufSize, &iValLen, false) )
+			if ( !getLob(iColumn, pBuf, iBufSize, &iValLen, false) )
 				return false;
 		}
 		break;
 	default:
 		{
-			EnumDataType eDataType = GetDataType(iColumn, iBufSize);
+			auto eDataType = getDataType(iColumn, iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -464,42 +447,42 @@ bool COciRecordSet::GetValue( unsigned int iColumn,
 	return true;
 }
 
-unsigned int COciRecordSet::GetRowsMoved( void )
+unsigned int COciRecordSet::GetRowsMoved()
 {
-	DB_POINTER_CHECK_RET(m_pResultSet,0);
+	DB_POINTER_CHECK_RET(pResultSet_,0);
 
-	return OCI_GetRowCount(m_pResultSet);
+	return OCI_GetRowCount(pResultSet_);
 }
 
-unsigned int COciRecordSet::GetColumns( void )
+unsigned int COciRecordSet::GetColumns()
 {
-	DB_POINTER_CHECK_RET(m_pResultSet,0);
+	DB_POINTER_CHECK_RET(pResultSet_,0);
 
-	return OCI_GetColumnCount(m_pResultSet);
+	return OCI_GetColumnCount(pResultSet_);
 }
 
 const char* COciRecordSet::GetColumnName( unsigned int iColIndex )
 {
-	DB_POINTER_CHECK_RET(m_pResultSet,NULL);
+	DB_POINTER_CHECK_RET(pResultSet_,nullptr);
 
-	return OCI_ColumnGetName(OCI_GetColumn(m_pResultSet,iColIndex));
+	return OCI_ColumnGetName(OCI_GetColumn(pResultSet_,iColIndex));
 }
 
 void COciRecordSet::SetBindRows( unsigned int iSize )
 {
-	MYASSERT(m_pStmt!=NULL);
+	MYASSERT(pStmt_!=nullptr);
 
-	if ( m_pStmt && iSize > 1 )
-		OCI_BindArraySetSize(m_pStmt, iSize);
+	if ( pStmt_ && iSize > 1 )
+		OCI_BindArraySetSize(pStmt_, iSize);
 
-	m_iBindRows = iSize;
+	iBindRows_ = iSize;
 }
 
-unsigned int COciRecordSet::GetBindRows( void )
+unsigned int COciRecordSet::GetBindRows()
 {
-	DB_POINTER_CHECK_RET(m_pStmt,0);
+	DB_POINTER_CHECK_RET(pStmt_,0);
 
-	return m_iBindRows;
+	return iBindRows_;
 }
 
 bool COciRecordSet::BindField( unsigned int iRowIndex,
@@ -510,18 +493,18 @@ bool COciRecordSet::BindField( unsigned int iRowIndex,
 							  unsigned int iFactLen /* = 0 */,
 							  bool bNull /* = false */ )
 {
-	DB_POINTER_CHECK_RET(m_pStmt,false);
-	//DB_POINTER_CHECK_RET(m_pResultSet,false);   // bind模式下结果集无效
+	DB_POINTER_CHECK_RET(pStmt_,false);
+	//DB_POINTER_CHECK_RET(pResultSet_,false);   // bind模式下结果集无效
 	DB_POINTER_CHECK_RET(pBuf, false);
-	MYASSERT(iRowIndex<m_iBindRows);
-	if ( iRowIndex >= m_iBindRows )
+	MYASSERT(iRowIndex<iBindRows_);
+	if ( iRowIndex >= iBindRows_ )
 		return false;
 
 	switch ( eType )
 	{
 	case DT_NUMBER:
 		{
-			EnumDataType eDataType = GetDataType(iValueIndex+1, iBufSize);
+			auto eDataType = getDataType(iValueIndex+1, iBufSize);
 			if ( eDataType == DT_UNKNOWN
 				|| eDataType == DT_NUMBER )
 				return false;
@@ -531,227 +514,227 @@ bool COciRecordSet::BindField( unsigned int iRowIndex,
 		}
 		break;
 	case DT_INT8:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
 			short iVal = *(Int8*)pBuf;
-			if ( !OCI_BindShort(m_pStmt, ToBindName(iValueIndex).c_str(), &iVal) )
+			if ( !OCI_BindShort(pStmt_, toBindName(iValueIndex).c_str(), &iVal) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				short *pData = new short[m_iBindRows];
-				if ( !OCI_BindArrayOfShorts(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new short[iBindRows_];
+				if ( !OCI_BindArrayOfShorts(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			short *pTemp = (short*)(*iter).second;
+			auto pTemp = (short*)(*iter).second;
 			pTemp[iRowIndex] = *(Int8*)pBuf;
 		}
 		break;
 	case DT_UINT8:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			unsigned short iVal = *(UInt8*)pBuf;
-			if ( !OCI_BindUnsignedShort(m_pStmt, ToBindName(iValueIndex).c_str(), &iVal) )
+			auto iVal = *(unsigned short*)pBuf;
+			if ( !OCI_BindUnsignedShort(pStmt_, toBindName(iValueIndex).c_str(), &iVal) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				unsigned short *pData = new unsigned short[m_iBindRows];
-				if ( !OCI_BindArrayOfUnsignedShorts(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new unsigned short[iBindRows_];
+				if ( !OCI_BindArrayOfUnsignedShorts(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			unsigned short *pTemp = (unsigned short*)(*iter).second;
+			auto pTemp = (unsigned short*)(*iter).second;
 			pTemp[iRowIndex] = *(UInt8*)pBuf;
 		}
 		break;
 	case DT_INT16:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindShort(m_pStmt, ToBindName(iValueIndex).c_str(), (short*)pBuf) )
+			if ( !OCI_BindShort(pStmt_, toBindName(iValueIndex).c_str(), (short*)pBuf) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				short *pData = new short[m_iBindRows];
-				if ( !OCI_BindArrayOfShorts(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new short[iBindRows_];
+				if ( !OCI_BindArrayOfShorts(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			short *pTemp = (short*)(*iter).second;
+			auto pTemp = (short*)(*iter).second;
 			pTemp[iRowIndex] = *(short*)pBuf;
 		}
 		break;
 	case DT_UINT16:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindUnsignedShort(m_pStmt, ToBindName(iValueIndex).c_str(), (unsigned short*)pBuf) )
+			if ( !OCI_BindUnsignedShort(pStmt_, toBindName(iValueIndex).c_str(), (unsigned short*)pBuf) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				unsigned short *pData = new unsigned short[m_iBindRows];
-				if ( !OCI_BindArrayOfUnsignedShorts(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new unsigned short[iBindRows_];
+				if ( !OCI_BindArrayOfUnsignedShorts(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			unsigned short *pTemp = (unsigned short*)(*iter).second;
+			auto pTemp = (unsigned short*)(*iter).second;
 			pTemp[iRowIndex] = *(unsigned short*)pBuf;
 		}
 		break;
 	case DT_INT32:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindInt(m_pStmt, ToBindName(iValueIndex).c_str(), (int*)pBuf) )
+			if ( !OCI_BindInt(pStmt_, toBindName(iValueIndex).c_str(), (int*)pBuf) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				int *pData = new int[m_iBindRows];
-				if ( !OCI_BindArrayOfInts(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new int[iBindRows_];
+				if ( !OCI_BindArrayOfInts(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			int *pTemp = (int*)(*iter).second;
+			auto pTemp = (int*)(*iter).second;
 			pTemp[iRowIndex] = *(int*)pBuf;
 		}
 		break;
 	case DT_UINT32:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindUnsignedInt(m_pStmt, ToBindName(iValueIndex).c_str(), (unsigned int*)pBuf) )
+			if ( !OCI_BindUnsignedInt(pStmt_, toBindName(iValueIndex).c_str(), (unsigned int*)pBuf) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				unsigned int *pData = new unsigned int[m_iBindRows];
-				if ( !OCI_BindArrayOfUnsignedInts(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new unsigned int[iBindRows_];
+				if ( !OCI_BindArrayOfUnsignedInts(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			unsigned int *pTemp = (unsigned int*)(*iter).second;
+			auto pTemp = (unsigned int*)(*iter).second;
 			pTemp[iRowIndex] = *(unsigned int*)pBuf;
 		}
 		break;
 	case DT_INT64:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindBigInt(m_pStmt, ToBindName(iValueIndex).c_str(), (big_int*)pBuf) )
+			if ( !OCI_BindBigInt(pStmt_, toBindName(iValueIndex).c_str(), (big_int*)pBuf) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				big_int *pData = new big_int[m_iBindRows];
-				if ( !OCI_BindArrayOfBigInts(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new big_int[iBindRows_];
+				if ( !OCI_BindArrayOfBigInts(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			big_int *pTemp = (big_int*)(*iter).second;
+			auto pTemp = (big_int*)(*iter).second;
 			pTemp[iRowIndex] = *(big_int*)pBuf;
 		}
 		break;
 	case DT_UINT64:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindUnsignedBigInt(m_pStmt, ToBindName(iValueIndex).c_str(), (big_uint*)pBuf) )
+			if ( !OCI_BindUnsignedBigInt(pStmt_, toBindName(iValueIndex).c_str(), (big_uint*)pBuf) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				big_uint *pData = new big_uint[m_iBindRows];
-				if ( !OCI_BindArrayOfUnsignedBigInts(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new big_uint[iBindRows_];
+				if ( !OCI_BindArrayOfUnsignedBigInts(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			big_uint *pTemp = (big_uint*)(*iter).second;
+			auto pTemp = (big_uint*)(*iter).second;
 			pTemp[iRowIndex] = *(big_uint*)pBuf;
 		}
 		break;
 	case DT_TIME:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			OCI_Date *pDate = OCI_DateCreate( OCI_StatementGetConnection(m_pStmt) );
+			auto pDate = OCI_DateCreate( OCI_StatementGetConnection(pStmt_) );
 			if ( !pDate )
 				return false;
 			if ( !OCI_DateFromText(pDate, (otext*)pBuf, "YYYY-MM-DD HH24:MI:SS") )
@@ -759,123 +742,123 @@ bool COciRecordSet::BindField( unsigned int iRowIndex,
 				OCI_DateFree(pDate);
 				return false;
 			}
-			if ( !OCI_BindDate(m_pStmt, ToBindName(iValueIndex).c_str(), pDate) )
+			if ( !OCI_BindDate(pStmt_, toBindName(iValueIndex).c_str(), pDate) )
 			{
 				OCI_DateFree(pDate);
 				return false;
 			}
-			m_mapDateList.insert(std::map<unsigned int, OCI_Date*>::value_type(iValueIndex, pDate));
+			mapDateList_.insert(std::map<unsigned int, OCI_Date*>::value_type(iValueIndex, pDate));
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				OCI_Date **pDate = OCI_DateArrayCreate(OCI_StatementGetConnection(m_pStmt), m_iBindRows);
-				if ( !OCI_BindArrayOfDates(m_pStmt, ToBindName(iValueIndex).c_str(), pDate, 0) )
+				auto pDate = OCI_DateArrayCreate(OCI_StatementGetConnection(pStmt_), iBindRows_);
+				if ( !OCI_BindArrayOfDates(pStmt_, toBindName(iValueIndex).c_str(), pDate, 0) )
 				{
 					OCI_DateArrayFree(pDate);
 					return false;
 				}
-				m_mapDateArrayList.insert(std::map<unsigned int, OCI_Date**>::value_type(iValueIndex, pDate));
+				mapDateArrayList_.insert(std::map<unsigned int, OCI_Date**>::value_type(iValueIndex, pDate));
 			}
 
-			std::map<unsigned int, OCI_Date**>::iterator iter = m_mapDateArrayList.find(iValueIndex);
-			if ( iter == m_mapDateArrayList.end() )
+			auto iter = mapDateArrayList_.find(iValueIndex);
+			if ( iter == mapDateArrayList_.end() )
 				return false;
 
-			OCI_Date **pTemp = (OCI_Date**)(*iter).second;
+			auto pTemp = (OCI_Date**)(*iter).second;
 			if ( !OCI_DateFromText(*pTemp, (otext*)pBuf, "YYYY-MM-DD HH24:MI:SS") )
 				return false;
 		}
 		break;
 	case DT_FLOAT:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindFloat(m_pStmt, ToBindName(iValueIndex).c_str(), (float*)pBuf) )
+			if ( !OCI_BindFloat(pStmt_, toBindName(iValueIndex).c_str(), (float*)pBuf) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				float *pData = new float[m_iBindRows];
-				if ( !OCI_BindArrayOfFloats(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				float *pData = new float[iBindRows_];
+				if ( !OCI_BindArrayOfFloats(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			float *pTemp = (float*)(*iter).second;
+			auto pTemp = (float*)(*iter).second;
 			pTemp[iRowIndex] = *(float*)pBuf;
 		}
 		break;
 	case DT_DOUBLE:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindDouble(m_pStmt, ToBindName(iValueIndex).c_str(), (double*)pBuf) )
+			if ( !OCI_BindDouble(pStmt_, toBindName(iValueIndex).c_str(), (double*)pBuf) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				double *pData = new double[m_iBindRows];
-				if ( !OCI_BindArrayOfDoubles(m_pStmt, ToBindName(iValueIndex).c_str(), pData, 0) )
+				auto pData = new double[iBindRows_];
+				if ( !OCI_BindArrayOfDoubles(pStmt_, toBindName(iValueIndex).c_str(), pData, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			double *pTemp = (double*)(*iter).second;
+			auto pTemp = (double*)(*iter).second;
 			pTemp[iRowIndex] = *(double*)pBuf;
 		}
 		break;
 	case DT_STRING:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			if ( !OCI_BindString(m_pStmt, ToBindName(iValueIndex).c_str(), (otext*)pBuf, iFactLen) )
+			if ( !OCI_BindString(pStmt_, toBindName(iValueIndex).c_str(), (otext*)pBuf, iFactLen) )
 				return false;
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				char *pData = new char[m_iBindRows*(iBufSize+1)];   // 考虑结束符
-				memset(pData, 0x0, m_iBindRows*(iBufSize+1));
-				if ( !OCI_BindArrayOfStrings(m_pStmt, ToBindName(iValueIndex).c_str(), (otext*)pData, iBufSize, 0) )
+				auto pData = new char[iBindRows_*(iBufSize+1)];   // 考虑结束符
+				memset(pData, 0x0, iBindRows_*(iBufSize+1));
+				if ( !OCI_BindArrayOfStrings(pStmt_, toBindName(iValueIndex).c_str(), (otext*)pData, iBufSize, 0) )
 				{
 					delete []pData;
 					return false;
 				}
-				m_mapParamsList.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
+				mapParamsList_.insert(std::map<unsigned int, void*>::value_type(iValueIndex, pData));
 			}
 
-			std::map<unsigned int, void*>::iterator iter = m_mapParamsList.find(iValueIndex);
-			if ( iter == m_mapParamsList.end() )
+			auto iter = mapParamsList_.find(iValueIndex);
+			if ( iter == mapParamsList_.end() )
 				return false;
 
-			char *pTemp = (char*)(*iter).second;
+			auto pTemp = (char*)(*iter).second;
 			memcpy(pTemp+iBufSize*iRowIndex+iRowIndex, 
 				pBuf, 
 				iFactLen>iBufSize?iBufSize:iFactLen);
 		}
 		break;
 	case DT_CLOB:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			OCI_Lob *pLob = OCI_LobCreate( OCI_StatementGetConnection(m_pStmt), OCI_CLOB );
+			auto pLob = OCI_LobCreate( OCI_StatementGetConnection(pStmt_), OCI_CLOB );
 			if ( !pLob )
 				return false;
 			if ( OCI_LobWrite(pLob, pBuf, iFactLen) != iFactLen )
@@ -883,38 +866,38 @@ bool COciRecordSet::BindField( unsigned int iRowIndex,
 				OCI_LobFree(pLob);
 				return false;
 			}
-			if ( !OCI_BindLob(m_pStmt, ToBindName(iValueIndex).c_str(), pLob) )
+			if ( !OCI_BindLob(pStmt_, toBindName(iValueIndex).c_str(), pLob) )
 			{
 				OCI_LobFree(pLob);
 				return false;
 			}
-			m_mapLobList.insert(std::map<unsigned int, OCI_Lob*>::value_type(iValueIndex, pLob));
+			mapLobList_.insert(std::map<unsigned int, OCI_Lob*>::value_type(iValueIndex, pLob));
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				OCI_Lob **pLob = OCI_LobArrayCreate(OCI_StatementGetConnection(m_pStmt), OCI_CLOB, m_iBindRows);
-				if ( !OCI_BindArrayOfLobs(m_pStmt, ToBindName(iValueIndex).c_str(), pLob, OCI_CLOB, 0) )
+				auto pLob = OCI_LobArrayCreate(OCI_StatementGetConnection(pStmt_), OCI_CLOB, iBindRows_);
+				if ( !OCI_BindArrayOfLobs(pStmt_, toBindName(iValueIndex).c_str(), pLob, OCI_CLOB, 0) )
 				{
 					OCI_LobArrayFree(pLob);
 					return false;
 				}
-				m_mapLobArrayList.insert(std::map<unsigned int, OCI_Lob**>::value_type(iValueIndex, pLob));
+				mapLobArrayList_.insert(std::map<unsigned int, OCI_Lob**>::value_type(iValueIndex, pLob));
 			}
 
-			std::map<unsigned int, OCI_Lob**>::iterator iter = m_mapLobArrayList.find(iValueIndex);
-			if ( iter == m_mapLobArrayList.end() )
+			auto iter = mapLobArrayList_.find(iValueIndex);
+			if ( iter == mapLobArrayList_.end() )
 				return false;
 
-			OCI_Lob **pTemp = (OCI_Lob**)(*iter).second;
+			auto pTemp = (OCI_Lob**)(*iter).second;
 			OCI_LobWrite(pTemp[iRowIndex], pBuf, iFactLen);
 		}
 		break;
 	case DT_BLOB:
-		if ( m_iBindRows == 1 )
+		if ( iBindRows_ == 1 )
 		{
-			OCI_Lob *pLob = OCI_LobCreate( OCI_StatementGetConnection(m_pStmt), OCI_BLOB );
+			auto pLob = OCI_LobCreate( OCI_StatementGetConnection(pStmt_), OCI_BLOB );
 			if ( !pLob )
 				return false;
 			if ( OCI_LobWrite(pLob, pBuf, iFactLen) != iFactLen )
@@ -922,31 +905,31 @@ bool COciRecordSet::BindField( unsigned int iRowIndex,
 				OCI_LobFree(pLob);
 				return false;
 			}
-			if ( !OCI_BindLob(m_pStmt, ToBindName(iValueIndex).c_str(), pLob) )
+			if ( !OCI_BindLob(pStmt_, toBindName(iValueIndex).c_str(), pLob) )
 			{
 				OCI_LobFree(pLob);
 				return false;
 			}
-			m_mapLobList.insert(std::map<unsigned int, OCI_Lob*>::value_type(iValueIndex, pLob));
+			mapLobList_.insert(std::map<unsigned int, OCI_Lob*>::value_type(iValueIndex, pLob));
 		}
 		else
 		{
 			if ( iRowIndex == 0 )
 			{
-				OCI_Lob **pLob = OCI_LobArrayCreate(OCI_StatementGetConnection(m_pStmt), OCI_BLOB, m_iBindRows);
-				if ( !OCI_BindArrayOfLobs(m_pStmt, ToBindName(iValueIndex).c_str(), pLob, OCI_BLOB, 0) )
+				auto pLob = OCI_LobArrayCreate(OCI_StatementGetConnection(pStmt_), OCI_BLOB, iBindRows_);
+				if ( !OCI_BindArrayOfLobs(pStmt_, toBindName(iValueIndex).c_str(), pLob, OCI_BLOB, 0) )
 				{
 					OCI_LobArrayFree(pLob);
 					return false;
 				}
-				m_mapLobArrayList.insert(std::map<unsigned int, OCI_Lob**>::value_type(iValueIndex, pLob));
+				mapLobArrayList_.insert(std::map<unsigned int, OCI_Lob**>::value_type(iValueIndex, pLob));
 			}
 
-			std::map<unsigned int, OCI_Lob**>::iterator iter = m_mapLobArrayList.find(iValueIndex);
-			if ( iter == m_mapLobArrayList.end() )
+			auto iter = mapLobArrayList_.find(iValueIndex);
+			if ( iter == mapLobArrayList_.end() )
 				return false;
 
-			OCI_Lob **pTemp = (OCI_Lob**)(*iter).second;
+			auto pTemp = (OCI_Lob**)(*iter).second;
 			OCI_LobWrite(pTemp[iRowIndex], pBuf, iFactLen);
 		}
 		break;
@@ -954,20 +937,19 @@ bool COciRecordSet::BindField( unsigned int iRowIndex,
 		return false;
 	}
 
-
 	return true;
 }
 
-bool COciRecordSet::GetLob( const char* szFieldName, 
+bool COciRecordSet::getLob( const char* szFieldName, 
 						   void* pBuf,
 						   unsigned int iBufSize,
 						   unsigned int* iFactLen,
 						   bool bChar )
 {
-	OCI_Column *pColumn = OCI_GetColumn2(m_pResultSet, szFieldName);
+	auto pColumn = OCI_GetColumn2(pResultSet_, szFieldName);
 	if ( !pColumn )
 	{
-		MYASSERT(pColumn!=NULL);
+		MYASSERT(pColumn!=nullptr);
 		return false;
 	}
 
@@ -978,20 +960,19 @@ bool COciRecordSet::GetLob( const char* szFieldName,
 		return false;
 	}
 
-	OCI_Lob *pLob = OCI_GetLob2(m_pResultSet, szFieldName);
+	auto pLob = OCI_GetLob2(pResultSet_, szFieldName);
 	if ( !pLob )
 	{
-		MYASSERT(pLob!=NULL);
+		MYASSERT(pLob!=nullptr);
 		return false;
 	}
 
 	*iFactLen = (unsigned int)OCI_LobGetLength(pLob);  // 需要考虑一个字符占用的字节数？
 	if ( *iFactLen > 0 )
 	{
-		//OCI_LobRead(pLob, pBuf, iBufSize/**iFactLen>iBufSize?iBufSize:*iFactLen*/);
 		if ( bChar )
 		{
-			unsigned int iBytes = iBufSize;
+			auto iBytes = iBufSize;
 			OCI_LobRead2(pLob, pBuf, &iBufSize, &iBytes);
 			*iFactLen = iBytes;
 		}
@@ -1002,51 +983,50 @@ bool COciRecordSet::GetLob( const char* szFieldName,
 	return true;
 }
 
-bool COciRecordSet::GetLob( unsigned int iColumn, 
+bool COciRecordSet::getLob( unsigned int iColumn, 
 						   void* pBuf,
 						   unsigned int iBufSize,
 						   unsigned int* iFactLen,
 						   bool bChar )
 {
-	OCI_Column *pColumn = OCI_GetColumn(m_pResultSet, iColumn);
+	auto pColumn = OCI_GetColumn(pResultSet_, iColumn);
 	if ( !pColumn )
 	{
-		MYASSERT(pColumn!=NULL);
+		MYASSERT(pColumn!=nullptr);
 		return false;
 	}
 
-	unsigned int iColumnType = OCI_ColumnGetType(pColumn);
+	auto iColumnType = OCI_ColumnGetType(pColumn);
 	if ( iColumnType != OCI_CDT_LOB )
 	{
 		MYASSERT(iColumnType==OCI_CDT_LOB);
 		return false;
 	}
 
-	OCI_Lob *pLob = OCI_GetLob(m_pResultSet, iColumn);
+	auto pLob = OCI_GetLob(pResultSet_, iColumn);
 	if ( !pLob )
 	{
-		MYASSERT(pLob!=NULL);
+		MYASSERT(pLob!=nullptr);
 		return false;
 	}
 
 	*iFactLen = (unsigned int)OCI_LobGetLength(pLob);    // 需要考虑一个字符占用的字节数？
 	if ( *iFactLen > 0 )
 	{
-		//OCI_LobRead(pLob, pBuf, iBufSize/**iFactLen>iBufSize?iBufSize:*iFactLen*/);
 		if ( bChar )
 		{
-			unsigned int iBytes = iBufSize;
+			auto iBytes = iBufSize;
 			OCI_LobRead2(pLob, pBuf, &iBufSize, &iBytes);
 			*iFactLen = iBytes;
 		}
 		else
-			OCI_LobRead2(pLob, pBuf, NULL, &iBufSize);
+			OCI_LobRead2(pLob, pBuf, nullptr, &iBufSize);
 	}
 
 	return true;
 }
 
-std::string COciRecordSet::ToBindName(unsigned int iValueIndex)
+std::string COciRecordSet::toBindName(unsigned int iValueIndex)
 {
 	std::ostringstream ss;
 	ss.str("");
@@ -1054,12 +1034,12 @@ std::string COciRecordSet::ToBindName(unsigned int iValueIndex)
 	return ss.str();
 }
 
-EnumDataType COciRecordSet::GetDataType( unsigned int iColumn, unsigned int iBufSize )
+EnumDataType COciRecordSet::getDataType( unsigned int iColumn, unsigned int iBufSize )
 {
-	OCI_Column *pColumn = OCI_GetColumn(m_pResultSet, iColumn);
+	auto pColumn = OCI_GetColumn(pResultSet_, iColumn);
 	if ( !pColumn )
 	{
-		MYASSERT(pColumn!=NULL);
+		MYASSERT(pColumn!=nullptr);
 		return DT_UNKNOWN;
 	}
 
@@ -1067,8 +1047,8 @@ EnumDataType COciRecordSet::GetDataType( unsigned int iColumn, unsigned int iBuf
 	{
 	case OCI_CDT_NUMERIC:    // short, int, long long, float, double
 		{
-			int p = OCI_ColumnGetPrecision(pColumn);
-			int s = OCI_ColumnGetScale(pColumn);
+			auto p = OCI_ColumnGetPrecision(pColumn);
+			auto s = OCI_ColumnGetScale(pColumn);
 
 			if ( s==0 && iBufSize<sizeof(short) )
 				return DT_INT8;

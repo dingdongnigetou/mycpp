@@ -48,25 +48,25 @@ namespace mycpp
 			{
 				isHadCondVar_ = false;
 
-				hOS_.fallback.hSignalEvent = CreateEvent(NULL,  /* no security */
-					FALSE, /* auto-reset event */
-					FALSE, /* non-signaled initially */
-					NULL); /* unnamed */
+				hOS_.fallback.hSignalEvent = CreateEvent(nullptr,  /* no security */
+					false, /* auto-reset event */
+					false, /* non-signaled initially */
+					nullptr); /* unnamed */
 
-				MYABORTM(NULL != hOS_.fallback.hSignalEvent,
+				MYABORTM(nullptr != hOS_.fallback.hSignalEvent,
 					"GSCond::GSCond CreateEvent fail.");
 
-				hOS_.fallback.hbroadcastEvent = CreateEvent(NULL,
-					TRUE, FALSE, NULL);
-				MYABORTM(NULL != hOS_.fallback.hbroadcastEvent,
+				hOS_.fallback.hbroadcastEvent = CreateEvent(nullptr,
+					true, false, nullptr);
+				MYABORTM(nullptr != hOS_.fallback.hbroadcastEvent,
 					"GSCond::GSCond CreateEvent fail.");
 
-				/* Initialize the count to 0. */
+				/* initialize the count to 0. */
 
 				InitializeCriticalSection(&hOS_.fallback.lockerWaitersCount);
 			}
 #else
-			MYABORTM(0 == pthread_condattr_init(&attr_, NULL),
+			MYABORTM(0 == pthread_condattr_init(&attr_, nullptr),
 				"GSCond::GSCond pthread_condattr_init fail.");
 
 #define USE_CLOCK_MONOTONIC
@@ -95,8 +95,8 @@ namespace mycpp
 				CloseHandle(hOS_.fallback.hbroadcastEvent);
 				CloseHandle(hOS_.fallback.hSignalEvent);
 				DeleteCriticalSection(&hOS_.fallback.lockerWaitersCount);
-				hOS_.fallback.hbroadcastEvent = NULL;
-				hOS_.fallback.hSignalEvent = NULL;
+				hOS_.fallback.hbroadcastEvent = nullptr;
+				hOS_.fallback.hSignalEvent = nullptr;
 			}
 #else
 			pthread_cond_destroy(&hOS_);
@@ -272,7 +272,7 @@ namespace mycpp
 
 			mutex.Unlock();
 
-			DWORD result = WaitForMultipleObjects(2, handles, FALSE,
+			DWORD result = WaitForMultipleObjects(2, handles, false,
 				millisecond >= 0 ? (DWORD)millisecond : INFINITE);
 
 			mutex.Lock();

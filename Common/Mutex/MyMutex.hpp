@@ -25,11 +25,11 @@ namespace mycpp
 #ifdef _MSWINDOWS_
 			InitializeCriticalSection(&hOS_);
 #else
-			MYABORTM(0 == pthread_mutex_init(&hOS_, NULL), "MyMutex::MyMutex pthread_mutex_init fail.");
+			MYABORTM(0 == pthread_mutex_init(&hOS_, nullptr), "MyMutex::MyMutex pthread_mutex_init fail.");
 #endif
 		}
 
-		MyMutex::~MyMutex(void)
+		MyMutex::~MyMutex()
 		{
 #ifdef _MSWINDOWS_
 			DeleteCriticalSection(&hOS_);
@@ -98,7 +98,7 @@ namespace mycpp
 			mutex_.Lock();
 		}
 
-		MyAutoMutex::~MyAutoMutex(void)
+		MyAutoMutex::~MyAutoMutex()
 		{
 			mutex_.Unlock();
 		}

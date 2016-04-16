@@ -5,20 +5,20 @@ IConnectionPool* CreateDBConnectionPool( EnumDriverType eType )
 {
 	if (eType == ADO)
 	{
-		::CoInitialize(NULL);
+		::CoInitialize(nullptr);
 	}
 
-	IConnectionPool *pConnPool = NULL;
+	IConnectionPool *pConnPool = nullptr;
 	pConnPool = new CConnectionPool(eType);
 	
-	MYASSERT(pConnPool!=NULL);
+	MYASSERT(pConnPool!=nullptr);
 
 	return pConnPool;
 }
 
 void DestroyDBConnectionPool( IConnectionPool** pConnPool )
 {
-	MYASSERT(*pConnPool!=NULL);
+	MYASSERT(*pConnPool!=nullptr);
 
 	if ((*pConnPool)->GetDriverType() == ADO)
 	{
@@ -28,6 +28,6 @@ void DestroyDBConnectionPool( IConnectionPool** pConnPool )
 	if ( *pConnPool )
 	{
 		delete *pConnPool;
-		*pConnPool = NULL;
+		*pConnPool = nullptr;
 	}
 }

@@ -116,16 +116,16 @@ void use_win_thread()
 	for( int i=0; i<MAX_THREADS; i++ )
 	{
 		hThreadArray[i] = CreateThread( 
-			NULL,                   
+			nullptr,                   
 			0,                      
 			MyThreadFunction,       
-			NULL,					
+			nullptr,					
 			0,                      
 			&dwThreadIdArray[i]);   
 
 	} 
 
-	WaitForMultipleObjects(MAX_THREADS, hThreadArray, TRUE, INFINITE);
+	WaitForMultipleObjects(MAX_THREADS, hThreadArray, true, INFINITE);
 
 	clock_t finish = clock();
 	printf("result:%d\n", total3);
