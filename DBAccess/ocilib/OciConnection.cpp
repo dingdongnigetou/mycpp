@@ -14,6 +14,9 @@ COciConnection::COciConnection( const std::string& strHost,
 :strUser_(strUserName)
 ,strPwd_(strPassword)
 {
+	if (0 == iPort)
+		iPort = 1521;
+
 	std::ostringstream ssOciDB;
 	ssOciDB.str("");
 	if ( !strHost.empty() )
