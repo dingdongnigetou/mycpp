@@ -56,6 +56,7 @@ bool CAdoConnection::ConnectDB( )
 		pConn_->ConnectionString = strDB_.c_str();
 		pConn_->ConnectionTimeout = 30;
 		pConn_->Open(strDB_.c_str(), "", "", adConnectUnspecified);
+		ClearError();
 
 	    MYDB_PRINT("ADO version : %s\n",   (char*)(_bstr_t)pConn_->GetVersion());
 
@@ -94,7 +95,8 @@ bool CAdoConnection::isOpen()
 {
 	try
 	{
-		return (pConn_ != nullptr && (pConn_->State & adStateOpen));
+		if (pConn_ == nullptr || pConn_->State & adStateOpen || pErr_ == "¡¨Ω” ß∞‹")
+			return true;
 	}
 	catch (_com_error e)
 	{
@@ -102,6 +104,8 @@ bool CAdoConnection::isOpen()
 		errorHandle();
 		return false;
 	} 
+
+	return false;
 }
 
 void CAdoConnection::ReleaseRecordSet( IRecordSet** pcsRecordSet )
@@ -377,7 +381,7 @@ void CAdoConnection::SetLastError()
 
 bool CAdoConnection::testConnectAlive()
 {
-	if (!isOpen())
+	if (!isOpen()) 
 		if (!reconnectDB())
 			return false;
 
