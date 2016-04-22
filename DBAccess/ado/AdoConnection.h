@@ -99,7 +99,7 @@ public:
 	bool ConnectDB();
 
 	// 保存错误信息
-	void SetLastError();
+	void SetLastError(const char* err = nullptr);
 
 	// 清除错误信息
 	void ClearError();
@@ -121,7 +121,7 @@ private:
 	bool reconnectDB();
 
 	// 错误处理
-	void errorHandle();
+	void errorHandle(const char* err = nullptr);
 
 	// 测试连接状态
 	bool testConnectAlive();

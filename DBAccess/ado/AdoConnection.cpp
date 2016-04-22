@@ -62,9 +62,9 @@ bool CAdoConnection::ConnectDB( )
 
 		return true;
 	}
-	catch (...)
+	catch (_com_error& e)
 	{
-		errorHandle();
+		errorHandle(e.Description());
 		return false;
 	}
 }
@@ -86,7 +86,7 @@ bool CAdoConnection::close()
 	catch (_com_error e)
 	{
 		MYDB_PRINT("Warning: 关闭数据库发生异常. 错误信息: %s; 文件: %s; 行: %d\n", e.ErrorMessage(), __FILE__, __LINE__);
-		errorHandle();
+		errorHandle(e.Description());
 		return false;
 	}
 }
@@ -95,17 +95,17 @@ bool CAdoConnection::isOpen()
 {
 	try
 	{
-		if (pConn_ == nullptr || pConn_->State & adStateOpen || pErr_ == "连接失败")
-			return true;
+		if (pConn_ == nullptr || !(pConn_->State & adStateOpen))
+			return false;
 	}
 	catch (_com_error e)
 	{
 		MYDB_PRINT("Warning: IsOpen 方法发生异常. 错误信息: %s; 文件: %s; 行: %d\n", e.ErrorMessage(), __FILE__, __LINE__);
-		errorHandle();
+		errorHandle(e.Description());
 		return false;
 	} 
 
-	return false;
+	return true;
 }
 
 void CAdoConnection::ReleaseRecordSet( IRecordSet** pcsRecordSet )
@@ -158,9 +158,9 @@ bool CAdoConnection::ExecuteSql( const char* szSql )
 			return false;
 		}
 	}
-	catch (...)
+	catch (_com_error& e)
 	{
-		errorHandle();
+		errorHandle(e.Description());
 		return false;
 	}
 }
@@ -240,9 +240,9 @@ void CAdoConnection::Rollback()
 			return;
 		}		
 	}
-	catch(...)
+	catch(_com_error& e)
 	{
-		errorHandle();
+		errorHandle(e.Description());
 		return ;
 	} 
 
@@ -266,9 +266,9 @@ bool CAdoConnection::Commit()
 			return false;
 		}
 	}
-	catch(...)
+	catch(_com_error& e)
 	{
-		errorHandle();
+		errorHandle(e.Description());
 		return false;
 	} 
 
@@ -367,21 +367,27 @@ bool CAdoConnection::reconnectDB()
 	return ConnectDB();
 }
 
-void CAdoConnection::errorHandle()
+void CAdoConnection::errorHandle(const char* err)
 {
-	SetLastError();
+	SetLastError(err);
 }
 
-void CAdoConnection::SetLastError()
+void CAdoConnection::SetLastError(const char* err)
 {
 	ClearError();
+	if (err != nullptr)
+	{
+		sprintf_s(pErr_, ERROR_STR_SIZE, "%s", err);
+		return;
+	}
+
 	ErrorPtr p = pConn_->Errors->GetItem(pConn_->Errors->GetCount() - 1);
 	sprintf_s(pErr_, ERROR_STR_SIZE, "%s", (char*)p->Description + '\0');
 }
 
 bool CAdoConnection::testConnectAlive()
 {
-	if (!isOpen()) 
+	if (!isOpen() ||  std::string(pErr_) == "连接失败" ) 
 		if (!reconnectDB())
 			return false;
 
