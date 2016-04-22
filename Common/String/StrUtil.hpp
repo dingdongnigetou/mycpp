@@ -9,69 +9,81 @@
 #include <string>
 #include <stdarg.h>
 
-#include "string.hpp"
+#include "Singleton.hpp"
 
 namespace mycpp
 {
-	namespace StrUtil 
+	class StrUtil : public Singleton<StrUtil>
 	{
-		// 删除字符串左边空白
-		INLINE static tstring TrimLeft(const tstring& str)
+		friend class Singleton<StrUtil>;
+
+	public:
+		// 字符串格式化
+		template <typename... Args>
+		std::string Format(const char*s, Args... args)
 		{
-			tstring t = str;
+			std::stringstream os;
+			doFormat(os, s, args...);
+			return os.str();
+		}
+
+		// 删除字符串左边空白
+		std::string TrimLeft(const std::string& str)
+		{
+			std::string t = str;
 			t.erase(0, t.find_first_not_of(" \t\n\r"));
 			return t;
 		}
 
 		// 删除字符串右边空白
-		INLINE static tstring TrimRight(const tstring& str)
+		std::string TrimRight(const std::string& str)
 		{
-			tstring t = str;
+			std::string t = str;
 			t.erase(t.find_last_not_of(" \t\n\r") + 1);
 			return t;
 		}
 
 		// 删除字符串左右两边空白
-		INLINE static tstring Trim(const tstring& str)
+		std::string Trim(const std::string& str)
 		{
-			tstring t = str;
+			std::string t = str;
 			t.erase(0, t.find_first_not_of(" \t\n\r"));
 			t.erase(t.find_last_not_of(" \t\n\r") + 1);
 			return t;
 		}
 
 		// 转换为小写字符串
-		INLINE static tstring ToLower(const tstring& str)
+		std::string ToLower(const std::string& str)
 		{
-			tstring t = str;
+			std::string t = str;
 			std::transform(t.begin(), t.end(), t.begin(), ::tolower);
 			return t;
 		}
 
 		// 转换为大写字符串
-		INLINE static tstring ToUpper(const tstring& str)
+		std::string ToUpper(const std::string& str)
 		{
-			tstring t = str;
+			std::string t = str;
 			std::transform(t.begin(), t.end(), t.begin(), ::toupper);
 			return t;
 		}
 
 		// 分解字符串
-		INLINE static void Split(std::vector<tstring> &csResult, const tstring& str, const tstring& delimiters)
+		void Split(std::vector<std::string> &csResult, const std::string& str, const std::string& delimiters)
 		{
 			int iOffset = 0;
-			tstring strToken;
+			std::string strToken;
 			for (;;)
 			{
-				tstring::size_type i = str.find_first_not_of(delimiters, iOffset);
-				if (i == tstring::npos) {
+				std::string::size_type i = str.find_first_not_of(delimiters, iOffset);
+				if (i == std::string::npos) {
 					iOffset = str.length();
 					return;
 				}
 
 				// 查找标识结束位置
-				tstring::size_type j = str.find_first_of(delimiters, i);
-				if (j == tstring::npos) {
+				std::string::size_type j = str.find_first_of(delimiters, i);
+				if (j == std::string::npos) {
 					strToken = str.substr(i);
 					iOffset = str.length();
 					csResult.push_back(strToken);
@@ -86,22 +98,14 @@ namespace mycpp
 		}
 
 		//不分大小写的比较
-		INLINE static bool EqualsIgnoreCase(const tstring& strSrc, const tstring& strDest)
+		bool EqualsIgnoreCase(const std::string& strSrc, const std::string& strDest)
 		{
 			return ToLower(strSrc) == ToLower(strDest);
 		}
 
-
-		// 字符串类型转换模板函数
-		// 字符串类型转换模板函数
-		template<class T> T ToNumber(const tstring& str);
-		template<class T> T ToHexNumber(const tstring& str);
-		template<class T> tstring ToString(const T value);
-		template<class T> tstring ToHexString(const T value);
-
 		// 将十进制字符串转换为数值
 		template<class T>
-		T ToNumber(const tstring& str)
+		T ToNumber(const std::string& str)
 		{
 			T value;
 			std::istringstream iss(str.c_str());
@@ -111,7 +115,7 @@ namespace mycpp
 
 		// 将十六进制字符串转换为数值
 		template<class T>
-		T ToHexNumber(const tstring& str)
+		T ToHexNumber(const std::string& str)
 		{
 			T value;
 			std::istringstream iss(str.c_str());
@@ -120,7 +124,7 @@ namespace mycpp
 		}
 
 		template<class T>
-		tstring ToString(const T value)
+		std::string ToString(const T value)
 		{
 			std::ostringstream oss;
 			oss << value;
@@ -128,7 +132,7 @@ namespace mycpp
 		}
 
 		template<class T>
-		tstring ToHexString(const T value)
+		std::string ToHexString(const T value)
 		{
 			std::ostringstream oss;
 			oss << "0x" << std::hex << value;
@@ -151,90 +155,36 @@ namespace mycpp
 			return 0;
 		}
 
-#define MAX_STRING_LENGHT  (100<<20)
-
-		INLINE static  bool VFormat(tstring &strOString, const char *czFormat, va_list ap)
+	private:
+		void doFormat(std::ostream& os, const char* s)
 		{
-			char sBuffer[256];
-			va_list apStart;
-			char *pBuffer;
-			int n, size = 256;
-
-
-			strOString.clear();
-#ifdef _MSWINDOWS_
-			apStart = ap;
-#else
-			va_copy(apStart, ap);
-#endif
-			pBuffer = sBuffer;
-			while (pBuffer) {
-#ifdef _MSWINDOWS_
-				ap = apStart;
-#else
-				va_copy(ap, apStart);
-#endif
-				n = MYVSNPRINTF(pBuffer, size, czFormat, ap);
-				if (n > -1 && n < size)
-				{
-					//成功格式化
-					//pBuffer[n] = '\0';
-					strOString = pBuffer;
-					if (pBuffer != sBuffer)
-					{
-						::free(pBuffer);
-					}
-					return true;
-				}
-				if (pBuffer != sBuffer)
-				{
-					::free(pBuffer);
-				}
-				pBuffer = nullptr;
-				size *= 2;
-				if (size > MAX_STRING_LENGHT)
-				{
-					MYASSERT(0);
-					return false;
-				}
-
-				pBuffer = (char*) ::malloc(size);
-				MYABORT(pBuffer != nullptr);
-			}
-			if (pBuffer && pBuffer != sBuffer)
+			while (*s)
 			{
-				::free(pBuffer);
+				if (*s == '%' && *(++s) != '%')
+					throw std::logic_error("Format: 参数太少");
+
+				os << *s++;
 			}
-			return false;
 		}
 
-		INLINE static  bool Format(tstring &strOString, const char* czFormat, ...)
+		template <typename T, typename... Args>
+		void doFormat(std::ostream& os, const char *s, T value, Args... args)
 		{
-			bool bRet;
-			va_list ap;
-			va_start(ap, czFormat);
-			bRet = StrUtil::VFormat(strOString, czFormat, ap);
-			va_end(ap);
-			return  bRet;
-
-		}
-
-		INLINE static  bool AppendWithFormat(tstring &strIOString, const char* czFormat, ...)
-		{
-			bool bRet;
-			tstring strTemp;
-			va_list ap;
-			va_start(ap, czFormat);
-			bRet = StrUtil::VFormat(strTemp, czFormat, ap);
-			va_end(ap);
-
-			if (bRet)
+			while (*s)
 			{
-				strIOString += strTemp;
+				if (*s == '%' && *(++s) != '%')
+				{
+					os << value;
+					doFormat(os, *s ? ++s : s, args...);
+					return;
+				}
+				os << *s++;
 			}
-			return bRet;
+			throw std::logic_error("Format: 参数过多");
 		}
-	}
+	};
 }
+
+#define STRUTIL() mycpp::StrUtil::instance()
 
 #endif //end MYCPP_STRUTIL_H

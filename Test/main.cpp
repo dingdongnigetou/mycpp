@@ -11,6 +11,10 @@ using namespace std;
 #pragma comment(lib,"../DBAccess/bin/Release/DBAccess.lib")
 #endif
 
+#include "../Common/Time/DateTime.hpp"
+#include "../Common/Utils.hpp"
+#include "../Common/String/StrUtil.hpp"
+
 int main(int argc, char* argv[])
 {
 	IConnectionPool *pcsPool = CreateDBConnectionPool(ADO);
@@ -55,6 +59,10 @@ int main(int argc, char* argv[])
 		getchar();
 		pSet->MoveNext();
 	}
+
+	UTILS()->MySleep(11111);
+	UTILS()->IsPortBusy(0);
+	auto d = STRUTIL()->Format("%s", "hello");
 
 	system("pause");
 
