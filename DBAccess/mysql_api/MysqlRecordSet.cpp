@@ -178,7 +178,7 @@ bool  CMysqlRecordSet::getFieldList()
 			return false;
 		
 	    // 转化为大写字符串
-	    auto strUpperName = StrUtil::ToUpper(std::string(pField->name));
+	    auto strUpperName = STRUTIL()->ToUpper(std::string(pField->name));
 
 		mapFieldList_.insert(std::map<std::string, unsigned int>::value_type(strUpperName,i));
 	}
@@ -192,7 +192,7 @@ bool  CMysqlRecordSet::getFieldIndex( const char* szFieldName,unsigned int& iInd
 {
 	MY_ASSERT_RET_VAL(szFieldName,false);
 
-	auto strNameUpper = StrUtil::ToUpper(std::string(szFieldName)); //转化为大写字符串
+	auto strNameUpper = STRUTIL()->ToUpper(std::string(szFieldName)); //转化为大写字符串
 
 	auto iter = mapFieldList_.find(strNameUpper);
 
@@ -251,42 +251,42 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 	case DT_INT8:
 		iValLen = sizeof(Int8);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int8*)pBuf = StrUtil::ToNumber<Int8>(pRow[iIndex]);
+		*(Int8*)pBuf = STRUTIL()->ToNumber<Int8>(pRow[iIndex]);
 		break;
 	case DT_UINT8:
 		iValLen = sizeof(UInt8);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt8*)pBuf = StrUtil::ToNumber<UInt8>(pRow[iIndex]);
+		*(UInt8*)pBuf = STRUTIL()->ToNumber<UInt8>(pRow[iIndex]);
 		break;
 	case DT_INT16:
 		iValLen = sizeof(Int16);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int16*)pBuf = StrUtil::ToNumber<Int16>(pRow[iIndex]);
+		*(Int16*)pBuf = STRUTIL()->ToNumber<Int16>(pRow[iIndex]);
 		break;
 	case DT_UINT16:
 		iValLen = sizeof(UInt16);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt16*)pBuf = StrUtil::ToNumber<UInt16>(pRow[iIndex]);
+		*(UInt16*)pBuf = STRUTIL()->ToNumber<UInt16>(pRow[iIndex]);
 		break;
 	case DT_INT32:
 		iValLen = sizeof(Int32);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int32*)pBuf = StrUtil::ToNumber<Int32>(pRow[iIndex]);
+		*(Int32*)pBuf = STRUTIL()->ToNumber<Int32>(pRow[iIndex]);
 		break;
 	case DT_UINT32:
 		iValLen = sizeof(UInt32);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt32*)pBuf = StrUtil::ToNumber<UInt32>(pRow[iIndex]);
+		*(UInt32*)pBuf = STRUTIL()->ToNumber<UInt32>(pRow[iIndex]);
 		break;
 	case DT_INT64:
 		iValLen = sizeof(Int64);
     	CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int64*)pBuf = StrUtil::ToNumber<Int64>(pRow[iIndex]);
+		*(Int64*)pBuf = STRUTIL()->ToNumber<Int64>(pRow[iIndex]);
 		break;
 	case DT_UINT64:
 		iValLen = sizeof(UInt64);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt64*)pBuf = StrUtil::ToNumber<UInt64>(pRow[iIndex]);
+		*(UInt64*)pBuf = STRUTIL()->ToNumber<UInt64>(pRow[iIndex]);
 		break;
 	case DT_TIME:
 		{
@@ -312,12 +312,12 @@ bool CMysqlRecordSet::GetValue( const char* szFieldName,
 	case DT_FLOAT:
 		iValLen = sizeof(float);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(float*)pBuf = StrUtil::ToNumber<float>(pRow[iIndex]); 
+		*(float*)pBuf = STRUTIL()->ToNumber<float>(pRow[iIndex]); 
 		break;
 	case DT_DOUBLE:
 		iValLen = sizeof(double);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(double*)pBuf = StrUtil::ToNumber<double>(pRow[iIndex]);
+		*(double*)pBuf = STRUTIL()->ToNumber<double>(pRow[iIndex]);
 		break;
 	case DT_STRING:
  		{
@@ -430,42 +430,42 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 	case DT_INT8:
 		iValLen = sizeof(Int8);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int8*)pBuf = StrUtil::ToNumber<Int8>(pRow[iColumn]);
+		*(Int8*)pBuf = STRUTIL()->ToNumber<Int8>(pRow[iColumn]);
 		break;
 	case DT_UINT8:
 		iValLen = sizeof(UInt8);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt8*)pBuf = StrUtil::ToNumber<UInt8>(pRow[iColumn]);
+		*(UInt8*)pBuf = STRUTIL()->ToNumber<UInt8>(pRow[iColumn]);
 		break;
 	case DT_INT16:
 		iValLen = sizeof(Int16);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int16*)pBuf = StrUtil::ToNumber<Int16>(pRow[iColumn]);
+		*(Int16*)pBuf = STRUTIL()->ToNumber<Int16>(pRow[iColumn]);
 		break;
 	case DT_UINT16:
 		iValLen = sizeof(UInt16);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt16*)pBuf = StrUtil::ToNumber<UInt16>(pRow[iColumn]) ;
+		*(UInt16*)pBuf = STRUTIL()->ToNumber<UInt16>(pRow[iColumn]) ;
 		break;
 	case DT_INT32:
 		iValLen = sizeof(Int32);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int32*)pBuf = StrUtil::ToNumber<Int32>(pRow[iColumn]);
+		*(Int32*)pBuf = STRUTIL()->ToNumber<Int32>(pRow[iColumn]);
 		break;
 	case DT_UINT32:
 		iValLen = sizeof(UInt32);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt32*)pBuf = StrUtil::ToNumber<UInt32>(pRow[iColumn]);
+		*(UInt32*)pBuf = STRUTIL()->ToNumber<UInt32>(pRow[iColumn]);
 		break;
 	case DT_INT64:
 		iValLen = sizeof(Int64);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(Int64*)pBuf = StrUtil::ToNumber<Int64>(pRow[iColumn]);
+		*(Int64*)pBuf = STRUTIL()->ToNumber<Int64>(pRow[iColumn]);
 		break;
 	case DT_UINT64:
 		iValLen = sizeof(UInt64);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(UInt64*)pBuf = StrUtil::ToNumber<UInt64>(pRow[iColumn]);
+		*(UInt64*)pBuf = STRUTIL()->ToNumber<UInt64>(pRow[iColumn]);
 		break;
 	case DT_TIME:
 		{
@@ -490,12 +490,12 @@ bool CMysqlRecordSet::GetValue( unsigned int iColumn,
 	case DT_FLOAT:
 		iValLen = sizeof(float);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(float*)pBuf = StrUtil::ToNumber<float>(pRow[iColumn]);
+		*(float*)pBuf = STRUTIL()->ToNumber<float>(pRow[iColumn]);
 		break;
 	case DT_DOUBLE:
 		iValLen = sizeof(double);
 		CHECK_DATA_LEN_LEGAL(iBufSize, iValLen, iFactLen);
-		*(double*)pBuf = StrUtil::ToNumber<double>(pRow[iColumn]);
+		*(double*)pBuf = STRUTIL()->ToNumber<double>(pRow[iColumn]);
 		break;
 	case DT_STRING:
 		{
