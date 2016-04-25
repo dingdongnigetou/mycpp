@@ -387,9 +387,13 @@ void CAdoConnection::SetLastError(const char* err)
 
 bool CAdoConnection::testConnectAlive()
 {
-	if (!isOpen() ||  std::string(pErr_) == "连接失败" ) 
+	if (!isOpen()
+		|| std::string(pErr_) == "连接失败"
+		|| std::string(pErr_).find("一般性网络错误") != std::string::npos)
+	{
 		if (!reconnectDB())
 			return false;
+	}
 
 	return true;
 }
