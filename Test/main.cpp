@@ -18,6 +18,8 @@ using namespace std;
 #include <thread>
 #include <iostream>
 
+#include "Test.h"
+
 
 void dosome(int a, int b)
 {
@@ -33,8 +35,7 @@ void test(Fn f, Args... args)
 
 int main(int argc, char* argv[])
 {
-	test([](int a, int b) { std::cout << a*b << std::endl; }, 2, 3);
-
+	TestMeta();
 
 	getchar();
 

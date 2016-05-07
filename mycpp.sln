@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DBAccess", "DBAccess\DBAccess.vcxproj", "{3B154330-8469-4F7B-8126-2C01824AD637}"
 EndProject
@@ -9,6 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{B20D1884-0253-4B57-A03E-A24BBB153BE3}"
 	ProjectSection(SolutionItems) = preProject
+		Common\Meta.hpp = Common\Meta.hpp
 		common\mydefs.h = common\mydefs.h
 		common\mytypes.h = common\mytypes.h
 		Common\noncopyable.h = Common\noncopyable.h
