@@ -13,7 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{B20D18
 		common\mydefs.h = common\mydefs.h
 		common\mytypes.h = common\mytypes.h
 		Common\noncopyable.h = Common\noncopyable.h
+		Common\Sigleton_c11.hpp = Common\Sigleton_c11.hpp
 		Common\Singleton.hpp = Common\Singleton.hpp
+		Common\Singleton_boost.hpp = Common\Singleton_boost.hpp
 		common\Utils.hpp = common\Utils.hpp
 	EndProjectSection
 EndProject
