@@ -19,44 +19,12 @@ using namespace std;
 #include <iostream>
 
 #include "Test.h"
-#include "../Common/Sigleton_c11.hpp"
-
-
-void dosome(int a, int b)
-{
-	std::cout << a + b << std::endl;
-}
-
-template<typename Fn, typename... Args>
-void test(Fn f, Args... args)
-{
-	f(args...);
-}
-
-class Test
-{
-
-public:
-	Test()
-	{
-	}
-
-	Test(int a, std::string c)
-	{
-		std::cout << a << " " << c << std::endl;
-	}
-
-	void dosome() { std::cout << "hello" << std::endl; }
-
-};
+//#include "../Common/Sigleton_c11.hpp"
+#include "../Common/Thread/Thread.hpp"
 
 int main(int argc, char* argv[])
 {
-	TestMeta();
-
-	mycpp::Sigleton<Test>::Instance().dosome();
-	mycpp::Sigleton<Test>::Instance(1, "hello").dosome();
-
+	mycpp::MSWinApi::Instance()->IsMSWndHaveCondVarApi();
 	getchar();
 
 	return 0;

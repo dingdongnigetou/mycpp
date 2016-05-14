@@ -5,6 +5,10 @@
 #include "../mytypes.h"
 #include "../noncopyable.h"
 
+#ifdef _LINUX
+#include<fcntl.h>
+#endif
+
 namespace mycpp
 {
 	class Mycond;

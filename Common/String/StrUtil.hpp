@@ -9,7 +9,7 @@
 #include <string>
 #include <stdarg.h>
 
-#include "Singleton.hpp"
+#include "../Singleton.hpp"
 
 namespace mycpp
 {

@@ -15,7 +15,7 @@
 
 #ifdef _MSWINDOWS_
 #define MYSNPRINTF(xbuf, xbufsize , xfmt, ... ) _snprintf_s(xbuf,xbufsize, _TRUNCATE,xfmt, __VA_ARGS__)
-#define BZERO(_m, _s) memset(_m, 0, _s)
+#define bzero(_m, _s) memset(_m, 0, _s)
 #define MYVSNPRINTF(xbuf, xbufsize , xfmt, ... ) _vsnprintf_s(xbuf,xbufsize, _TRUNCATE,xfmt, __VA_ARGS__)
 #else
 #define MYSNPRINTF snprintf

@@ -1,9 +1,11 @@
-#define __MYCPP_MYCOND_HPP__
+#ifndef __MYCPP_MYCOND_HPP__
 #define __MYCPP_MYCOND_HPP__
 
+#include "../mydefs.h"
 #include "../mytypes.h"
 #include "../noncopyable.h"
 #include "MyMutex.hpp"
+#include "../MSWinApi.hpp"
 
 namespace mycpp
 {
@@ -35,13 +37,13 @@ namespace mycpp
 		}CondErrno;
 
 	public:
-		GSCond()
+		MyCond()
 		{
 #ifdef _MSWINDOWS_	
 			bzero(&hOS_, sizeof(hOS_));
-			if (IsMSWndHaveCondVarApi())
+			if (MSWinApi::Instance()->IsMSWndHaveCondVarApi())
 			{
-				pInitializeConditionVariable(&hOS_.condVar);
+				MSWinApi::Instance()->InitializeConditionVariable(&hOS_.condVar);
 				isHadCondVar_ = true;
 			}
 			else
@@ -54,12 +56,12 @@ namespace mycpp
 					nullptr); /* unnamed */
 
 				MYABORTM(nullptr != hOS_.fallback.hSignalEvent,
-					"GSCond::GSCond CreateEvent fail.");
+					"MyCond::MyCond CreateEvent fail.");
 
 				hOS_.fallback.hbroadcastEvent = CreateEvent(nullptr,
 					true, false, nullptr);
 				MYABORTM(nullptr != hOS_.fallback.hbroadcastEvent,
-					"GSCond::GSCond CreateEvent fail.");
+					"MyCond::MyCond CreateEvent fail.");
 
 				/* initialize the count to 0. */
 
@@ -67,21 +69,21 @@ namespace mycpp
 			}
 #else
 			MYABORTM(0 == pthread_condattr_init(&attr_, nullptr),
-				"GSCond::GSCond pthread_condattr_init fail.");
+				"MyCond::MyCond pthread_condattr_init fail.");
 
 #define USE_CLOCK_MONOTONIC
 #ifdef USE_CLOCK_MONOTONIC
 
 			MYABORTM(0 == pthread_condattr_setclock(&pCond->stAttr, CLOCK_MONOTONIC),
-				"GSCond::GSCond pthread_condattr_setclock CLOCK_MONOTONIC fail.");
+				"MyCond::MyCond pthread_condattr_setclock CLOCK_MONOTONIC fail.");
 #endif
 
 			MYABORTM(0 == pthread_cond_init(&hOS_, &attr_),
-				"GSCond::GSCond pthread_cond_init fail.");
+				"MyCond::MyCond pthread_cond_init fail.");
 #endif
 		}
 
-		~GSCond()
+		~MyCond()
 		{
 #ifdef _MSWINDOWS_
 			if (isHadCondVar_)
@@ -112,7 +114,7 @@ namespace mycpp
 			if (isHadCondVar_)
 			{
 				mutex.nLocked_--;
-				pSleepConditionVariableCS(&hOS_.condVar, &mutex.hOS_, INFINITE);
+				MSWinApi::Instance()->SleepConditionVariableCS(&hOS_.condVar, &mutex.hOS_, INFINITE);
 				mutex.nLocked_++;
 			}
 			else
@@ -130,11 +132,11 @@ namespace mycpp
 		{
 			CondErrno eRet = COND_ERR;
 #ifdef _MSWINDOWS_
-			FDT_ASSERT(millisecond >= 0);
+			MYASSERT(millisecond >= 0);
 			if (isHadCondVar_)
 			{
 				mutex.nLocked_--;
-				if (pSleepConditionVariableCS(&hOS_.condVar, &mutex.hOS_, millisecond))
+				if (MSWinApi::Instance()->SleepConditionVariableCS(&hOS_.condVar, &mutex.hOS_, millisecond))
 				{
 					eRet = COND_SUCCESS;
 				}
@@ -209,7 +211,7 @@ namespace mycpp
 #ifdef _MSWINDOWS_
 			if (isHadCondVar_)
 			{
-				pWakeConditionVariable(&hOS_.condVar);
+				MSWinApi::Instance()->WakeConditionVariable(&hOS_.condVar);
 			}
 			else
 			{
@@ -226,7 +228,7 @@ namespace mycpp
 				//		}
 			}
 #else
-			MYABORTM(0 == pthread_cond_signal(&hOS_), "GSCond::Signal pthread_cond_signal fail.");
+			MYABORTM(0 == pthread_cond_signal(&hOS_), "MyCond::Signal pthread_cond_signal fail.");
 #endif
 		}
 
@@ -235,7 +237,7 @@ namespace mycpp
 #ifdef _MSWINDOWS_
 			if (isHadCondVar_)
 			{
-				pWakeAllConditionVariable(&hOS_.condVar);
+				MSWinApi::Instance()->WakeAllConditionVariable(&hOS_.condVar);
 			}
 			else
 			{
@@ -252,7 +254,7 @@ namespace mycpp
 				//		}
 			}
 #else
-			MYABORTM(0 == pthread_cond_broadcast(&hOS_), "GSCond::Signal pthread_cond_broadcast fail.");
+			MYABORTM(0 == pthread_cond_broadcast(&hOS_), "MyCond::Signal pthread_cond_broadcast fail.");
 #endif
 		}
 

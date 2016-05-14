@@ -2,7 +2,7 @@
 #define __MYCPP_THREAD_HPP__
 
 #include <thread>
-#include <function>
+#include <functional>
 
 #ifdef _LINUX
 #include <pthread.h>
@@ -11,6 +11,7 @@
 #include "../mydefs.h"
 #include "../noncopyable.h"
 #include "../Mutex/MyMutex.hpp"
+#include "../Mutex/MyCond.hpp"
 
 
 namespace mycpp
@@ -24,7 +25,7 @@ namespace mycpp
 		//开始线程，成功返回TRUE,失败返回FALSE	
 		//支持闭包，原生函数
 		template<typename Fn, typename... Args>
-		bool Start(Fn f, Args args);	 
+		bool Start(Fn f, Args ...args);	 
 
 		//停止线程，成功返回TRUE,失败返回FALSE	
 		void Stop();	
@@ -69,8 +70,6 @@ namespace mycpp
 		MyMutex mutex_;
 		MyCond cond_;
 		long threadId_ = -1;
-
-		std::function fn_;
 	};
 }
 
@@ -78,22 +77,6 @@ namespace mycpp
 #include <process.h>    /* _beginthread, _endthread */
 #endif
 
-// impl
-namespace mycpp
-{
-//已经启动
-#define  THREAD_FLAGS_JOINABLE 	0x0001
-#define  THREAD_FLAGS_EXIT_MARK	0x0002
-#define  THREAD_FLAGS_PAUSE	   0x0004
-#define  THREAD_FLAGS_JOINING	0x0008
-#define  THREAD_FLAGS_STARTING 	0x0010
-
-	Thread::Thread()
-	{
-	}
-
-	Thread::~Thread() { Stop(); Join(); }
-}
-
+#include "impl/Thread.ipp"
 
 #endif // !__MYCPP_THREAD_HPP__

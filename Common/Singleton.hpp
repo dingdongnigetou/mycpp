@@ -15,7 +15,7 @@ namespace mycpp
 		static volatile bool s_instantiating;
 
 	public:
-		static TYPE* instance()
+		static TYPE* Instance()
 		{
 			if (!s_instantiated.test_and_set())
 			{
@@ -29,7 +29,7 @@ namespace mycpp
 		}
 
 		template <typename ...P>
-		static TYPE* instance(P... args)
+		static TYPE* Instance(P... args)
 		{
 			if (!s_instantiated.test_and_set())
 			{
