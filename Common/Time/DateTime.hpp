@@ -4,6 +4,12 @@
 #include <time.h>
 #include <string>
 
+#include "../mydefs.h"
+
+#ifndef _MSWINDOWS_
+#include <unistd.h>
+#endif
+
 namespace mycpp
 {
 	class DateTime{
@@ -204,6 +210,67 @@ namespace mycpp
 		static bool IsSameMonth(const DateTime& lhs, const DateTime& rhs){ return lhs.GetYear() == rhs.GetYear() && lhs.GetMonth() == rhs.GetMonth(); }
 		static bool IsSameYear(time_t lhs, time_t rhs) { return IsSameYear(DateTime(lhs), DateTime(rhs)); }
 		static bool IsSameYear(const DateTime& lhs, const DateTime& rhs){ return lhs.GetYear() == rhs.GetYear(); }
+		static UInt32  GetTickCount()
+		{
+#ifdef _MSWINDOWS_
+			return ::GetTickCount();
+#else
+			struct tms tmp = { 0 };
+			UInt64 tcks = (UInt64)times(&tmp);
+			UInt64 Hz = (UInt64)sysconf(_SC_CLK_TCK);
+			if (Hz < 1)
+			{
+				return 0;
+			}
+			return  (UInt32)((UInt64)((tcks * 1000) / Hz) & 0xFFFFFFFF);
+#endif
+		}
+
+		static UInt64 GetPerformanceCounter()
+		{
+#ifdef _MSWINDOWS_
+			LARGE_INTEGER frequency = { 0 };
+			LARGE_INTEGER counter = { 0 };
+
+			QueryPerformanceFrequency(&frequency);
+			QueryPerformanceCounter(&counter);
+
+			if (frequency.QuadPart == 0)
+				return 0;
+
+			return (UInt64)(counter.QuadPart * 1000 / frequency.QuadPart);
+#else
+
+			UInt64 tcks = (UInt64)times(NULL);
+			UInt64 Hz = (UInt64)sysconf(_SC_CLK_TCK);
+			if (Hz < 1)
+			{
+				return 0;
+			}
+			return  (UInt64)(tcks * 1000 / Hz);
+#endif
+		}
+
+		static UInt32  CountElapsed(UInt32 nowTick, UInt32 oldTick)
+		{
+			if (nowTick >= oldTick)
+			{
+				return nowTick - oldTick;
+			}
+			return (MAX_UINT32 - oldTick + nowTick);
+		}
+
+		//返回系统 UTC 时间，自 1970-01-01 00:00:00 的秒数 等于 Timestamp
+		static UInt64 GetEpochMilliseconds(void)
+		{
+			struct _TIMEVAL tv;
+			if (gettimeofday(&tv, NULL))
+			{
+				return MAX_UINT64;
+			}
+			return (UInt64)(tv.tv_sec) * 1000 + tv.tv_usec / 1000;
+		}
+
 	private:
 		void format(const std::string& strTime, const std::string& strFormat)
 		{
@@ -238,6 +305,31 @@ namespace mycpp
 			seconds_ = sec < 0 ? 0 : sec;
 			localtime_s(&date_, &seconds_);
 		}
+
+		private:
+			struct _TIMEVAL
+			{
+				Int64 tv_sec;
+				long  tv_usec;
+			};
+
+
+			// Based on: http://www.google.com/codesearch/p?hl=en#dR3YEbitojA/os_win32.c&q=GetSystemTimeAsFileTime%20license:bsd
+			// See COPYING for copyright information.
+			static int gettimeofday(struct _TIMEVAL *tv, void* tz) {
+#define EPOCHFILETIME (116444736000000000ULL)
+				FILETIME ft;
+				LARGE_INTEGER li;
+				UInt64 tt;
+
+				GetSystemTimeAsFileTime(&ft);
+				li.LowPart = ft.dwLowDateTime;
+				li.HighPart = ft.dwHighDateTime;
+				tt = (li.QuadPart - EPOCHFILETIME) / 10;
+				tv->tv_sec = tt / 1000000;
+				tv->tv_usec = tt % 1000000;
+				return 0;
+			}
 	};// end class
 
 }// end mycpp

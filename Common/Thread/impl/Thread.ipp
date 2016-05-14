@@ -14,13 +14,11 @@ namespace mycpp
 #define  THREAD_FLAGS_PAUSE	   0x0004
 #define  THREAD_FLAGS_JOINING	0x0008
 #define  THREAD_FLAGS_STARTING 	0x0010
-#define  THREAD_FLAGS_DETACHED  0x0020
+#define  THREAD_FLAGS_detachED  0x0020
 
 	typedef struct _StruThreadArgs
 	{
-		FunPtrThreadCallback fn;
-		void *pFnParam;
-		Thread *pThread;
+		std::function<void()> callback;
 	}StruThreadArgs;
 
 
@@ -34,16 +32,16 @@ namespace mycpp
 		StruThreadArgs *p = (StruThreadArgs*)param;
 		args = *p;
 		delete p;
-		p = NULL;
-		args.fn(*args.pThread, args.pFnParam);
+		p = nullptr;
+		args.callback();
 		return 0;
-
 	}
 
 	Thread::Thread(){ }
 	Thread::~Thread() { Stop(); Join(); }
 
-	bool Thread::Start(FunPtrThreadCallback fnOnEvent, void *pThreadData)
+	template<typename Fun, typename... Args>
+	bool Thread::Start(Fun&& fun, Args&&... args)
 	{
 		MyAutoMutex locker(mutex_);
 
@@ -85,8 +83,6 @@ namespace mycpp
 		}
 
 		flags_ = THREAD_FLAGS_JOINABLE;
-		fnUser_ = fnOnEvent;
-		pFnThreadData_ = pThreadData;
 
 		StruThreadArgs *pArgs = new StruThreadArgs;
 		if (!pArgs)
@@ -95,15 +91,13 @@ namespace mycpp
 			flags_ = 0;
 			return false;
 		}
-		pArgs->fn = fnOnEvent;
-		pArgs->pFnParam = pThreadData;
-		pArgs->pThread = this;
+		pArgs->callback = [this, fun, args...]() { fun(*this, args...);  };
 
 #if  defined(_MSWINDOWS_)
 		unsigned int id;
-		hThread_ = (HANDLE)_beginthreadex(NULL, 0, _ThreadProxyEnter, pArgs,
+		hThread_ = (HANDLE)_beginthreadex(nullptr, 0, _ThreadProxyEnter, pArgs,
 			0, (unsigned int *)(&id));
-		if (hThread_ == NULL)
+		if (hThread_ == nullptr)
 		{
 			MYASSERT(0);
 			delete pArgs;
@@ -174,7 +168,7 @@ namespace mycpp
 		}
 		if (threadId_ == GetCurrentThreadID())
 		{
-			Detach();
+			detach();
 			return;
 		}
 		if (flags_&THREAD_FLAGS_JOINING)
@@ -183,7 +177,7 @@ namespace mycpp
 			do
 			{
 				mutex_.Unlock();
-				UTILS()->MySleep(10);
+				Utils()->MySleep(10);
 				mutex_.Lock();
 			} while (flags_&THREAD_FLAGS_JOINING);
 			return;
@@ -195,7 +189,7 @@ namespace mycpp
 		flags_ = 0;
 	}
 
-	void Thread::Detach()
+	void Thread::detach()
 	{
 		if (hThread_)
 		{
@@ -207,7 +201,7 @@ namespace mycpp
 			hThread_ = 0;
 		}
 
-		flags_ |= THREAD_FLAGS_DETACHED;
+		flags_ |= THREAD_FLAGS_detachED;
 	}
 
 	void Thread::Suspend()
@@ -273,7 +267,7 @@ namespace mycpp
 			MYASSERT(iRet == WAIT_OBJECT_0);
 			CloseHandle(hThread_);
 #else
-			iRet = pthread_join(hThread_, NULL);
+			iRet = pthread_join(hThread_, nullptr);
 			MYASSERT(iRet == 0);
 			hThread_ = (pthread_t)-1;
 #endif

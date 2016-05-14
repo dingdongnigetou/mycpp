@@ -16,9 +16,7 @@
 
 namespace mycpp
 {
-	class Thread;
-	typedef  void(*FunPtrThreadCallback)(Thread &thread, void *pThreadData);
-
+	// void run(mycpp::Thread& t, ...);
 	class Thread : noncopyable
 	{
 	public:
@@ -26,8 +24,9 @@ namespace mycpp
 		virtual ~Thread();
 
 		//开始线程，成功返回true,失败返回false	
-		//支持闭包，原生函数
-		bool Start(FunPtrThreadCallback fnOnEvent, void *pThreadDat);	 
+		// void run(mycpp::Thread& t, ...);
+		template<typename Fun, typename... Args>
+		bool Start(Fun&& fun, Args&&... args);	 
 
 		//停止线程，成功返回true,失败返回false	
 		void Stop();	
@@ -37,9 +36,6 @@ namespace mycpp
 
 		//等待线程结束
 		void Join();	
-
-		// 取消句柄与线程的绑定
-		void Detach();
 
 		//线程暂停
 		void Suspend();		
@@ -59,6 +55,7 @@ namespace mycpp
 		static long  GetCurrentThreadID(); //返回当前线程ID
 
 	private:
+		void detach();
 		void joinInner();
 
 	protected:
@@ -67,13 +64,11 @@ namespace mycpp
 #else
 		pthread_t hThread_ = nullptr;
 #endif
-		int flags_ = 0;
+		volatile int flags_ = 0;
 		MyMutex mutex_;
 		MyCond cond_;
 		long threadId_ = -1;
-		FunPtrThreadCallback fnUser_ = nullptr;
-		void *pFnThreadData_ = nullptr;
-		void *pUserData_ = nullptr;
+
 	};
 }
 #include "impl/Thread.ipp"
