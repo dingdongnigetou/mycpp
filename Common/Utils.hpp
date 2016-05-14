@@ -78,6 +78,6 @@ namespace mycpp
 }
 
 // µ•¿˝Àı–¥”Ô∑®Ã«
-#define UTILS() mycpp::Utils::Instance()
+#define Utils() mycpp::Utils::Instance()
 
 #endif // MYCPP_COMMON_COMMON_H 
