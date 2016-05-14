@@ -17,14 +17,29 @@ using namespace std;
 
 #include <thread>
 #include <iostream>
+#include <functional>
 
 #include "Test.h"
 //#include "../Common/Sigleton_c11.hpp"
 #include "../Common/Thread/Thread.hpp"
 
+
+void test(mycpp::Thread &thread, void* p)
+{
+	while (!thread.TestExit())
+	{
+		std::cout << "hello" << std::endl;
+	}
+}
+
 int main(int argc, char* argv[])
 {
-	mycpp::MSWinApi::Instance()->IsMSWndHaveCondVarApi();
+	mycpp::Thread t;
+	t.Start(test, nullptr);
+	t.Suspend();
+	getchar();
+	auto d = t.Resume();
+	t.Detach();
 	getchar();
 
 	return 0;
