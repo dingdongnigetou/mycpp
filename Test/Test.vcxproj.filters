@@ -6,5 +6,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Test.h" />
+    <ClInclude Include="TimerTest.hpp" />
   </ItemGroup>
 </Project>

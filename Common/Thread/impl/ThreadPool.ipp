@@ -52,10 +52,9 @@ namespace mycpp
 	{
 		MyAutoMutex lock(mutex_);
 		isrun_ = false;
-		for (auto& t : threads_)
-			t->Join();
-
 		cond_.Broadcast();
+		for (auto& t : threads_)
+			t->Stop();
 	}
 
 	void ThreadPool::JoinAll(void)
@@ -108,13 +107,13 @@ namespace mycpp
 		if (!isFound)
 		{
 			p = std::make_shared<Thread>();
-			MYABORT(p, "ThreadPool::addThread no memory.");
+			MYABORTM(p, "ThreadPool::addThread no memory.");
 			threads_.push_back(p);
 		}
 
 		nCapacity_++;
 
-		MYABORT(p->Start([this](Thread& t) { threadEntry(t); }), 
+		MYABORTM(p->Start([this](Thread& t) { threadEntry(t); }), 
 			"ThreadPool::addThread start fail.");
 	}
 

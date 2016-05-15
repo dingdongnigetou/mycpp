@@ -29,4 +29,6 @@ namespace mycpp
 
 }
 
+#include "impl\TimeMeter.ipp"
+
 #endif // ! __MYCPP_TIMEMETER_HPP__
