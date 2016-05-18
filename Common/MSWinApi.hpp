@@ -83,4 +83,6 @@ namespace mycpp
 	};
 }
 
+#define MSWinApi() mycpp::MSWinApi::Instance()
+
 #endif // !__MYCPP_MSWINAPI_HPP__

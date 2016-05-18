@@ -41,9 +41,9 @@ namespace mycpp
 		{
 #ifdef _MSWINDOWS_	
 			bzero(&hOS_, sizeof(hOS_));
-			if (MSWinApi::Instance()->IsMSWndHaveCondVarApi())
+			if (MSWinApi()->IsMSWndHaveCondVarApi())
 			{
-				MSWinApi::Instance()->InitializeConditionVariable(&hOS_.condVar);
+				MSWinApi()->InitializeConditionVariable(&hOS_.condVar);
 				isHadCondVar_ = true;
 			}
 			else
@@ -114,7 +114,7 @@ namespace mycpp
 			if (isHadCondVar_)
 			{
 				mutex.nLocked_--;
-				MSWinApi::Instance()->SleepConditionVariableCS(&hOS_.condVar, &mutex.hOS_, INFINITE);
+				MSWinApi()->SleepConditionVariableCS(&hOS_.condVar, &mutex.hOS_, INFINITE);
 				mutex.nLocked_++;
 			}
 			else
@@ -136,7 +136,7 @@ namespace mycpp
 			if (isHadCondVar_)
 			{
 				mutex.nLocked_--;
-				if (MSWinApi::Instance()->SleepConditionVariableCS(&hOS_.condVar, &mutex.hOS_, millisecond))
+				if (MSWinApi()->SleepConditionVariableCS(&hOS_.condVar, &mutex.hOS_, millisecond))
 				{
 					eRet = COND_SUCCESS;
 				}
@@ -211,7 +211,7 @@ namespace mycpp
 #ifdef _MSWINDOWS_
 			if (isHadCondVar_)
 			{
-				MSWinApi::Instance()->WakeConditionVariable(&hOS_.condVar);
+				MSWinApi()->WakeConditionVariable(&hOS_.condVar);
 			}
 			else
 			{
@@ -237,7 +237,7 @@ namespace mycpp
 #ifdef _MSWINDOWS_
 			if (isHadCondVar_)
 			{
-				MSWinApi::Instance()->WakeAllConditionVariable(&hOS_.condVar);
+				MSWinApi()->WakeAllConditionVariable(&hOS_.condVar);
 			}
 			else
 			{
