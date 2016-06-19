@@ -5,9 +5,9 @@
 #if defined(_MSC_VER) || defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
 //定义使用window 平台
-//# define _MSWINDOWS_
+# define _MSWINDOWS_
 
-#define _LINUX
+//#define _LINUX
 
 #if defined(_WIN64) || defined(WIN64)
 //64 位系统定义

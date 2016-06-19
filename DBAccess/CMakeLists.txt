@@ -20,8 +20,8 @@ if(UNIX)
 
 else()
 	include_directories(../Common/ common/ ado/ ocilib/ ocilib/api/win/ mysql_api/ mysql_api/api/win/)
-	link_directories(mysql_api/api/win/)
-	link_directories(ocilib/api/win/)
+	link_directories(${PROJECT_SOURCE_DIR}/mysql_api/api/win/)
+	link_directories(${PROJECT_SOURCE_DIR}/ocilib/api/win/)
 
 	add_library(DBAccess SHARED ${ADO_SRC_LIST} ${OCI_SRC_LIST} ${MYSQL_SRC_LIST} ${COMMMON_SRC_LIST})
 	target_link_libraries(DBAccess ociliba.lib libmysql.lib)
