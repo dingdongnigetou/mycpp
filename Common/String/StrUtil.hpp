@@ -185,6 +185,6 @@ namespace mycpp
 	};
 }
 
-#define STRUTIL() mycpp::StrUtil::instance()
+#define STRUTIL() mycpp::StrUtil::Instance()
 
 #endif //end MYCPP_STRUTIL_H

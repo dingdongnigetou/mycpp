@@ -3,7 +3,7 @@
 #include <sstream>
 #include <stdlib.h>
 
-#include "StrUtil.hpp"
+#include "String/StrUtil.hpp"
 using namespace mycpp;
 
 CMysqlRecordSet::CMysqlRecordSet( MYSQL* pConn, MYSQL_STMT* pStmt )

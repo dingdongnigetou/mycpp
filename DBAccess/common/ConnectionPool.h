@@ -4,7 +4,7 @@
 
 #include "DBAccessApi.h"
 #include "TypeDef.h"
-#include "MyMutex.hpp"
+#include "Mutex/MyMutex.hpp"
 
 #include <vector>
 
