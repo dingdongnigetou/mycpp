@@ -195,7 +195,7 @@ bool COciConnection::ExecuteSql( const char* szSql )
 	return true;
 }
 
-bool COciConnection::GetLastInsertID( const char* szSeqName, signed __int64& lRowID )
+bool COciConnection::GetLastInsertID( const char* szSeqName, signed long long& lRowID )
 {
 	DB_POINTER_CHECK_RET(szSeqName, false);
 	if ( !testConnectAlive() )
@@ -223,7 +223,7 @@ IRecordSet* COciConnection::ExecuteQuery( const char* szSql )
 {
 	DB_POINTER_CHECK_RET(szSql, nullptr);
 	if ( !testConnectAlive() )
-		return false;
+		return nullptr;
 
 	OCI_Statement *pStmt = nullptr;
 	pStmt = OCI_StatementCreate(pOciConn_);
@@ -250,7 +250,7 @@ IRecordSet* COciConnection::ExecutePageQuery( const char* szSql, int iStartRow, 
 {
 	DB_POINTER_CHECK_RET(szSql, nullptr);
 	if ( !testConnectAlive() )
-		return false;
+		return nullptr;
 
 	// 合成完整SQL语句
 	std::ostringstream ssFullSql;
@@ -472,7 +472,7 @@ const char* COciConnection::GetSysTime()
 	if ( !pRescordSet )
 	{
 		errorHandle();
-		return false;
+		return nullptr;
 	}
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
@@ -502,7 +502,7 @@ const char* COciConnection::GetSysDate()
 	if ( !pRescordSet )
 	{
 		errorHandle();
-		return false;
+		return nullptr;
 	}
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));
@@ -532,7 +532,7 @@ const char* COciConnection::GetSysDateTime()
 	if ( !pRescordSet )
 	{
 		errorHandle();
-		return false;
+		return nullptr;
 	}
 
 	memset(m_szDateTime, 0x0, sizeof(m_szDateTime));

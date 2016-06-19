@@ -3,6 +3,10 @@
 #include <sstream>
 #include <stdlib.h>
 
+//#ifdef _LINUX
+#include <string.h>
+//#endif
+
 #include "String/StrUtil.hpp"
 using namespace mycpp;
 
@@ -151,9 +155,9 @@ EnumDataType CMysqlRecordSet::getDataType( unsigned int iColumn, unsigned int iB
 	case MYSQL_TYPE_ENUM:
 	case MYSQL_TYPE_GEOMETRY:
 	case MYSQL_TYPE_NULL:
-	case MAX_NO_FIELD_TYPES:
-		return DT_UNKNOWN;
-		break;
+	//case MAX_NO_FIELD_TYPES:
+	//	return DT_UNKNOWN;
+	//	break;
 	default:
 		return DT_UNKNOWN;
 	}
@@ -675,13 +679,13 @@ bool CMysqlRecordSet::BindField( unsigned int iRowIndex,
 	case DT_INT64:
 		{
 			pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_LONGLONG;
-			pBindParam_[iValueIndex].buffer = (__int64*)pBuf;
+			pBindParam_[iValueIndex].buffer = (long long*)pBuf;
 		}
 		break;
 	case DT_UINT64:
 		{
 		    pBindParam_[iValueIndex].buffer_type = MYSQL_TYPE_LONGLONG;
-			pBindParam_[iValueIndex].buffer = (unsigned __int64*)pBuf;
+			pBindParam_[iValueIndex].buffer = (unsigned long long*)pBuf;
 		}
 		break;
 	case DT_TIME:
@@ -735,7 +739,7 @@ bool CMysqlRecordSet::BindField( unsigned int iRowIndex,
 		if ( mysql_stmt_execute(pStmt_) != 0 )
 			return false;
 
-		::memset(pBindParam_, 0, sizeof(MYSQL_BIND)*iBindCols_);   // 清空
+		memset(pBindParam_, 0, sizeof(MYSQL_BIND)*iBindCols_);   // 清空
 
 		if ( iRowIndex == iBindRows_ -1 )   // 最后一行
 			bBindSuccess_ = true;

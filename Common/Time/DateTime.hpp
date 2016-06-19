@@ -2,12 +2,14 @@
 #define __MYCPP_DATATIME_H__
 
 #include <time.h>
+#include <stdio.h>
 #include <string>
 
 #include "../mydefs.h"
 
 #ifndef _MSWINDOWS_
 #include <unistd.h>
+#include <sys/times.h>
 #endif
 
 namespace mycpp
@@ -19,7 +21,7 @@ namespace mycpp
 		explicit DateTime(void) : DateTime(time(0)) {}
 		DateTime(time_t seconds) : seconds_(seconds)
 		{
-			localtime_s(&this->date_, &this->seconds_);
+			localtime_all(&this->date_, &this->seconds_);
 		}
 		explicit DateTime(int year, int month, int day) : DateTime(year, month, day, 0, 0, 0) {}
 		DateTime(int year, int month, int day, int hour, int minute, int second)
@@ -44,7 +46,7 @@ namespace mycpp
 				return *this;
 			}
 			this->seconds_ = rhs.seconds_;
-			localtime_s(&this->date_, &this->seconds_);
+			localtime_all(&this->date_, &this->seconds_);
 			return *this;
 		}
 	public:
@@ -83,7 +85,7 @@ namespace mycpp
 		DateTime AddSeconds(int seconds)
 		{
 			seconds_ += seconds;
-			localtime_s(&date_, &seconds_);
+			localtime_all(&date_, &seconds_);
 
 			return *this;
 		}
@@ -113,7 +115,7 @@ namespace mycpp
 			seconds_ -= seconds;
 			if (seconds_ < 0)
 				seconds_ = 0;
-			localtime_s(&date_, &seconds_);
+			localtime_all(&date_, &seconds_);
 
 			return *this;
 		}
@@ -144,7 +146,7 @@ namespace mycpp
 		//%Y%m%d %H%M%S
 		std::string ToString2(void) const { return ToString("%Y%m%d%H%M%S"); }
 
-		std::string DateTime::ToString(const std::string& strFormat) const
+		std::string ToString(const std::string& strFormat) const
 		{
 			if (seconds_ <= 0) {
 				return std::string();
@@ -167,7 +169,7 @@ namespace mycpp
 		bool operator >= (const DateTime& rhs) { return seconds_ >= rhs.seconds_ ? true : false; }
 		bool operator <= (const DateTime& rhs) { return seconds_ <= rhs.seconds_ ? true : false; }
 		bool operator != (const DateTime& rhs) { return 0 != Compare(rhs); }
-		DateTime DateTime::operator - (const DateTime& rhs)
+		DateTime operator - (const DateTime& rhs)
 		{
 			auto seconds = seconds_ - rhs.seconds_;
 			return DateTime(seconds);
@@ -276,7 +278,8 @@ namespace mycpp
 		{
 			int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
 			try {
-				sscanf_s(strTime.c_str(), strFormat.c_str(), &year, &month, &day, &hour, &minute, &second);/// _stscanf_s	
+				//sscanf_s(strTime.c_str(), strFormat.c_str(), &year, &month, &day, &hour, &minute, &second);/// _stscanf_s	
+				sscanf(strTime.c_str(), strFormat.c_str(), &year, &month, &day, &hour, &minute, &second);/// _stscanf_s	
 			}
 			catch (...) {
 				return;
@@ -303,32 +306,42 @@ namespace mycpp
 			t.tm_sec = second;
 			time_t sec = mktime(&t);
 			seconds_ = sec < 0 ? 0 : sec;
-			localtime_s(&date_, &seconds_);
+			localtime_all(&date_, &seconds_);
 		}
 
-		private:
-			struct _TIMEVAL
-			{
-				Int64 tv_sec;
+	private:
+
+		void localtime_all(tm* date, time_t* seconds)
+		{
+#ifdef _MSWINDOWS_
+			localtime_s(date, seconds);
+#else
+			localtime_r(seconds, date);
+#endif 
+		}
+		struct _TIMEVAL
+		{
+			Int64 tv_sec;
 				long  tv_usec;
-			};
-
-
+		};
+		
+			
 			// Based on: http://www.google.com/codesearch/p?hl=en#dR3YEbitojA/os_win32.c&q=GetSystemTimeAsFileTime%20license:bsd
 			// See COPYING for copyright information.
-			static int gettimeofday(struct _TIMEVAL *tv, void* tz) {
+			static int gettimeofday(struct _TIMEVAL *tv, void* tz) 
+			{
 #define EPOCHFILETIME (116444736000000000ULL)
 				FILETIME ft;
-				LARGE_INTEGER li;
-				UInt64 tt;
-
-				GetSystemTimeAsFileTime(&ft);
-				li.LowPart = ft.dwLowDateTime;
-				li.HighPart = ft.dwHighDateTime;
-				tt = (li.QuadPart - EPOCHFILETIME) / 10;
-				tv->tv_sec = tt / 1000000;
-				tv->tv_usec = tt % 1000000;
-				return 0;
+					LARGE_INTEGER li;
+					UInt64 tt;
+					
+					GetSystemTimeAsFileTime(&ft);
+					li.LowPart = ft.dwLowDateTime;
+					li.HighPart = ft.dwHighDateTime;
+					tt = (li.QuadPart - EPOCHFILETIME) / 10;
+					tv->tv_sec = tt / 1000000;
+					tv->tv_usec = tt % 1000000;
+					return 0;
 			}
 	};// end class
 

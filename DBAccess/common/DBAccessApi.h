@@ -2,6 +2,7 @@
 #define __DBACCESSAPI_DEF_H__
 
 #include <cstdlib>
+#include "mytypes.h"
 
 #ifdef _WIN32
 
@@ -17,7 +18,7 @@
 
 #endif
 
-#elif _LINUX
+#else 
 
 #define DB_API extern "C" 
 #endif
@@ -173,8 +174,7 @@ public:
 	// 取得上一步 INSERT 操作产生的 ID
 	// oracle 采用sequence（序列）来获取最后插入行ID，需要指定序列名
 	// mysql 序列名无效
-	virtual bool GetLastInsertID( const char* szSeqName, signed __int64& lRowID ) = 0;
-
+	virtual bool GetLastInsertID( const char* szSeqName, signed long long& lRowID ) = 0;
 
 	// 执行查询sql,返回数据集
 	virtual	IRecordSet* ExecuteQuery( const char* szSql ) = 0;

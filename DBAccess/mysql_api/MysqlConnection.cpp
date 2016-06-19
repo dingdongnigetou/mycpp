@@ -6,6 +6,10 @@
 #include "errmsg.h"
 #include "mysqld_error.h"
 
+#ifndef _LINUX
+#include <string.h>
+#endif
+
 CMysqlConnection::CMysqlConnection( const std::string& strHost,
 								   const std::string& strDataBase,
 								   const std::string& strUserName,
@@ -146,7 +150,7 @@ bool CMysqlConnection::ExecuteSql( const char* szSql )
 	return true;
 }
 
-bool CMysqlConnection::GetLastInsertID( const char* szSeqName, signed __int64& lRowID )
+bool CMysqlConnection::GetLastInsertID( const char* szSeqName, signed long long& lRowID )
 {
 	if ( !testConnectAlive() )
 		return false;
@@ -165,7 +169,7 @@ IRecordSet*  CMysqlConnection::ExecuteQuery( const char* szSql )
 	MY_ASSERT_RET_VAL(szSql, nullptr);
 
 	if ( !testConnectAlive() )
-		return false;
+		return nullptr;
 
 	if ( 0 != mysql_query(pMysqlConn_,szSql) )
 	{
@@ -182,7 +186,7 @@ IRecordSet*  CMysqlConnection::ExecutePageQuery( const char* szSql, int iStartRo
 	MY_ASSERT_RET_VAL(szSql, nullptr);
 
 	if ( !testConnectAlive() )
-		return false;
+		return nullptr;
 
 	// 合成完整SQL语句
 	std::ostringstream ssFullSql;

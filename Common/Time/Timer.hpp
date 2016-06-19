@@ -57,6 +57,6 @@ namespace mycpp
 	};
 }
 
-#include "impl\Timer.ipp"
+#include "impl/Timer.ipp"
 
 #endif // !__MYCPP_TIMER_HPP__

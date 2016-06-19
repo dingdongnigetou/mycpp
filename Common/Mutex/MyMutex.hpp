@@ -33,7 +33,7 @@ namespace mycpp
 #endif
 		}
 
-		MyMutex::~MyMutex()
+		~MyMutex()
 		{
 #ifdef _MSWINDOWS_
 			DeleteCriticalSection(&hOS_);
@@ -42,7 +42,7 @@ namespace mycpp
 #endif
 
 		}
-		void MyMutex::Lock()
+		void Lock()
 		{
 #ifdef _MSWINDOWS_
 			EnterCriticalSection(&hOS_);
@@ -55,7 +55,7 @@ namespace mycpp
 #endif
 		}
 
-		void MyMutex::Unlock()
+		void Unlock()
 		{
 #ifdef _MSWINDOWS_
 			MYABORTM(0 != nLocked_, "MyMutex::Unlock unlock no locked");
@@ -69,7 +69,7 @@ namespace mycpp
 #endif
 		}
 
-		bool MyMutex::TryLock()
+		bool TryLock()
 		{
 #ifdef _MSWINDOWS_
 			if (!TryEnterCriticalSection(&hOS_))
@@ -96,13 +96,13 @@ namespace mycpp
 	private:
 		MyMutex &mutex_;
 	public:
-		MyAutoMutex::MyAutoMutex(MyMutex &mutex)
+		MyAutoMutex(MyMutex &mutex)
 			:mutex_(mutex)
 		{
 			mutex_.Lock();
 		}
 
-		MyAutoMutex::~MyAutoMutex()
+		~MyAutoMutex()
 		{
 			mutex_.Unlock();
 		}

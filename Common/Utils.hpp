@@ -34,45 +34,45 @@ namespace mycpp
 		}
 
 		// 查找本地端口占用情况
-		bool IsPortBusy(int port, const std::string& ip = "")
-		{
-#ifdef  _MSWINDOWS_
-			WSADATA wsa = { 0 };
-			if (0 != WSAStartup(MAKEWORD(2, 2), &wsa))
-			{
-				return false;
-			}
-#endif
-			SOCKET sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			if (INVALID_SOCKET == sockfd)
-			{
-#ifdef _MSWINDOWS_
-				WSACleanup();
-#endif
-				return false;
-			}
-			sockaddr_in service;
-			service.sin_family = AF_INET;
-			if (ip.empty())
-			{
-				service.sin_addr.s_addr = ::htonl(INADDR_ANY);
-			}
-			else
-			{
-				struct in_addr s;
-				inet_pton(AF_INET, ip.c_str(), (void*)&s);
-				service.sin_addr.s_addr = s.S_un.S_addr;
-			}
-			service.sin_port = htons(port);
-			int ret = ::bind(sockfd, (struct sockaddr*)&service, sizeof(service));
-#ifdef _MSWINDOWS_
-			closesocket(sockfd);
-			WSACleanup();
-#else
-			close(sockfd);
-#endif
-			return (0 != ret) ? true : false;
-		}
+//		bool IsPortBusy(int port, const std::string& ip = "")
+//		{
+//#ifdef  _MSWINDOWS_
+//			WSADATA wsa = { 0 };
+//			if (0 != WSAStartup(MAKEWORD(2, 2), &wsa))
+//			{
+//				return false;
+//			}
+//#endif
+//			SOCKET sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+//			if (INVALID_SOCKET == sockfd)
+//			{
+//#ifdef _MSWINDOWS_
+//				WSACleanup();
+//#endif
+//				return false;
+//			}
+//			sockaddr_in service;
+//			service.sin_family = AF_INET;
+//			if (ip.empty())
+//			{
+//				service.sin_addr.s_addr = ::htonl(INADDR_ANY);
+//			}
+//			else
+//			{
+//				struct in_addr s;
+//				inet_pton(AF_INET, ip.c_str(), (void*)&s);
+//				service.sin_addr.s_addr = s.S_un.S_addr;
+//			}
+//			service.sin_port = htons(port);
+//			int ret = ::bind(sockfd, (struct sockaddr*)&service, sizeof(service));
+//#ifdef _MSWINDOWS_
+//			closesocket(sockfd);
+//			WSACleanup();
+//#else
+//			close(sockfd);
+//#endif
+//			return (0 != ret) ? true : false;
+//		}
 
 	};
 }

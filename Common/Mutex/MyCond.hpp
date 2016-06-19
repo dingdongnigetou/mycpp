@@ -5,7 +5,10 @@
 #include "../mytypes.h"
 #include "../noncopyable.h"
 #include "MyMutex.hpp"
+
+#ifdef _MSWINDOWS_
 #include "../MSWinApi.hpp"
+#endif
 
 namespace mycpp
 {

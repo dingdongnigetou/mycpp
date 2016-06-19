@@ -4,12 +4,12 @@
 #include <thread>
 #include <functional>
 
-#include "Test.h"
-#include "TimerTest.hpp"
+//#include "Test.h"
+//#include "TimerTest.hpp"
 
 int main(int argc, char* argv[])
 {
-	TestTimer();
+//	TestTimer();
 
 	getchar();
 

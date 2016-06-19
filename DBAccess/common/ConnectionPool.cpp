@@ -2,7 +2,10 @@
 
 #include "OciConnection.h"
 #include "MysqlConnection.h"
+#ifdef _MSWINDOWS_
 #include "AdoConnection.h"
+#endif
+#include "Utils.hpp"
 
 #define SET_ERROR_CODE(err) (eError_ = err)
 #define GET_ERROR_CODE(perr) if ( perr ) {*perr = eError_;}
@@ -176,6 +179,7 @@ IConnection* CConnectionPool::createConnection()
 
 			iUsedConns_ ++;
 		}
+#ifdef _MSWINDOWS_
 	case ADO:
        {
 			CAdoConnection *p = new CAdoConnection(strHost_,
@@ -195,6 +199,7 @@ IConnection* CConnectionPool::createConnection()
 			iUsedConns_ ++;
        }
 		break;
+#endif 
 	default:
 		MYASSERTV( (eType_!=ODBC&&eType_!=OCI&&eType_!=MYSQL_API&&eType_!=ADO), eType_ );
 		SET_ERROR_CODE(RETCODE_PARAMS_ERROR);
@@ -266,7 +271,7 @@ void CConnectionPool::clearList()
 			// ½âËø
 			csMutex_.Unlock();
 			MYWARNV(0, "db connection is busy. please wait...");
-			Sleep(500);
+			Utils()->MySleep(500);
 			// ¼ÓËø
 			csMutex_.Lock();
 		}

@@ -7,6 +7,7 @@
 #include "mytypes.h"
 #include "mydefs.h"
 
+#ifdef _MSWINDOWS
 #ifdef WIN_LOWER  /// Server2003或者Xp等低版本需要使用这个才能进行ADO连接
 #import "c:\program files\common files\system\ado\msado60_Backcompat_i386.tlb" \
 	no_namespace rename("EOF", "adoEOF")
@@ -14,6 +15,7 @@
 #import "c:\program files\common files\system\ado\msado15.dll" \
 	no_namespace rename("EOF", "adoEOF")
 #endif
+#endif 
 
 #define MYDB_PRINT MYPRINTF
 
