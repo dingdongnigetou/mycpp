@@ -34,17 +34,21 @@ public:
 
 		new_node->Next = head.load(std::memory_order_relaxed);
 
-		while(!head.compare_exchange_weak(new_node->Next, new_node));
+		while(!head.compare_exchange_weak(new_node->Next, new_node, std::memory_order_release,
+			std::memory_order_relaxed));
 	}
 
 	T Pop()
 	{
 		auto result = head.load(std::memory_order_relaxed);
-		while (result != nullptr && !head.compare_exchange_weak(result, result->Next));
+		while (result != nullptr && !head.compare_exchange_weak(result, result->Next,
+			std::memory_order_release, std::memory_order_relaxed));
 		
 		if (nullptr != result) {
 			auto res = result->Data;
-			delete result;
+			// 这里得采用计数方式来释放
+			//delete result;
+			//result = nullptr;
 			return res;
 		}
 		else {
@@ -81,6 +85,7 @@ public:
 			head = head->Next;
 			auto data = result->Data;
 			delete result;
+			result = nullptr;
 			return data;
 		}
 		else {
@@ -90,8 +95,8 @@ public:
 	}
 };
 
-Stack<std::string> g_stack;
-//Stack_M<std::string> g_stack;
+//Stack<std::string> g_stack;
+Stack_M<std::string> g_stack;
 
 int main()
 {
