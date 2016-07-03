@@ -1,3 +1,5 @@
+#pragma once
+
 #include <atomic>
 #include <string>
 #include <memory>
@@ -6,7 +8,7 @@
 #include <chrono>
 #include <mutex>
 #include <exception>
-using namespace std;
+#include <list>
 
 template <typename T>
 struct Node
@@ -17,7 +19,6 @@ struct Node
 	Node(const T& dat) : Data(dat) {}
 };
 
-
 template <typename T>
 class Stack
 {
@@ -26,7 +27,7 @@ class Stack
 public:
 	void IsLockFree()
 	{
-		cout << "Is lock free: " << head.is_lock_free() << endl;
+		std::cout << "Is lock free: " << head.is_lock_free() << std::endl;
 	}
 	void Push(const T& data)
 	{
@@ -66,7 +67,7 @@ class Stack_M
 public:
 	void IsLockFree()
 	{
-		cout << "Is lock free: " << 0 << endl;
+		std::cout << "Is lock free: " << 0 << std::endl;
 	}
 	void Push(const T& data)
 	{
@@ -95,41 +96,38 @@ public:
 	}
 };
 
-//Stack<std::string> g_stack;
-Stack_M<std::string> g_stack;
+static Stack<std::string> g_stack;
+//static Stack_M<std::string> g_stack;
 
-int main()
+static void test_lock_free_stack()
 {
 	auto begin = std::chrono::high_resolution_clock::now(); 
 		
+	std::list<std::shared_ptr<std::thread>> threads;
 	for (int i = 0; i < 4; ++i) {
-		std::thread t([]{ 
+		threads.push_back(std::make_shared<std::thread>([]{ 
 				int k = 10000;
 				while(k--){
 					g_stack.Push("hello" + std::to_string(k));
 				}
-			 });
-		t.detach();
+			 }));
 	}
 
 	for (int i = 0; i < 4; ++i) {
-		std::thread t([]{ 
+		threads.push_back(std::make_shared<std::thread>([]{ 
 				int k = 10000;
 				while(k--){
 					auto res = g_stack.Pop();
 					//std::cout << res << std::endl;
 				}
-			 });
-		t.detach();
+			 }));
 	}
 
-	auto end = chrono::high_resolution_clock::now(); 
-	cout << "cost : " << chrono::duration_cast<chrono::microseconds>(end-begin).count() << endl;
+	for (auto t : threads)
+		t->join();
+
+	auto end = std::chrono::high_resolution_clock::now(); 
+	std::cout << "cost : " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() << std::endl;
 	g_stack.IsLockFree();
-
-	getchar();
-
-	return 0;
 }
-
 
