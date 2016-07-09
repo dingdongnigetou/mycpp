@@ -13,5 +13,6 @@
     <ClInclude Include="src\TestMeta.hpp" />
     <ClInclude Include="src\TimerTest.hpp" />
     <ClInclude Include="src\ThreadPool.hpp" />
+    <ClInclude Include="src\ringbuffer\ProducerConsumerQueue.h" />
   </ItemGroup>
 </Project>

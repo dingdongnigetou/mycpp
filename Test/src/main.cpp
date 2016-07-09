@@ -17,7 +17,7 @@ void test_steal_pool(bool enable_steal)
 		{
 			pool.add_task([&total,i] {
 				total++;
-				std::this_thread::sleep_for(std::chrono::microseconds(50));
+				std::this_thread::sleep_for(std::chrono::microseconds(50*i));
 			});
 		}
 	}
@@ -37,7 +37,7 @@ void test_mycpp_pool()
 		{
 			pool.enqueue([&total,i] {
 				total++;
-				std::this_thread::sleep_for(std::chrono::microseconds(50));
+				std::this_thread::sleep_for(std::chrono::microseconds(50*i));
 			});
 		}
 	}

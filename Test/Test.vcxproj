@@ -135,6 +135,7 @@
     <ClCompile Include="src\TestMutex.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ringbuffer\ProducerConsumerQueue.h" />
     <ClInclude Include="src\spinlock.h" />
     <ClInclude Include="src\TestMeta.hpp" />
     <ClInclude Include="src\ThreadPool.hpp" />
