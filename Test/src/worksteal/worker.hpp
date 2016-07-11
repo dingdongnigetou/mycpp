@@ -54,7 +54,7 @@ private:
 	void execute()
 	{
 		thread_id_ = std::this_thread::get_id();
-		while (enable_)
+		while (enable_ || !queue_.empty())
 		{
 			//not ready
 			if (work_num_ != workers_->size())

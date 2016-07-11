@@ -12,7 +12,9 @@
     <ClInclude Include="src\spinlock.h" />
     <ClInclude Include="src\TestMeta.hpp" />
     <ClInclude Include="src\TimerTest.hpp" />
-    <ClInclude Include="src\ThreadPool.hpp" />
     <ClInclude Include="src\ringbuffer\ProducerConsumerQueue.h" />
+    <ClInclude Include="src\worksteal\demo.hpp" />
+    <ClInclude Include="src\ringbuffer\demo.hpp" />
+    <ClInclude Include="src\worksteal\ThreadPool.hpp" />
   </ItemGroup>
 </Project>
